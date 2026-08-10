@@ -1,4 +1,13 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import {
   DxDateRangeBoxModule,
   DxTagBoxModule,
@@ -57,9 +66,53 @@ function isoToTarih(iso: string): Date {
   templateUrl: './rapor.html',
   styleUrl: './rapor.css',
 })
-export class Rapor implements OnInit {
+export class Rapor implements OnInit, OnDestroy {
   private readonly api = inject(AracHareketApi);
   private readonly bildirim = inject(Bildirim);
+
+  // Alttaki plaka taşma alanının (.plaka-cip-tasma) sağ kenarını "Rapor Oluştur" butonunun sağ
+  // kenarıyla hizalamak için field-row'un GERÇEK render genişliğini ölçüyoruz - CSS-only bir
+  // shrink-to-fit denemesi başarısız oldu (bkz. rapor.css yorumu, çipli alanın kendi sınırsız
+  // max-content'i sarmalayıcıyı sayfa sonuna kadar genişletiyordu). ResizeObserver, checkbox/buton
+  // gibi sabit width'i olmayan (metne bağlı) alanlar dahil her koşulda doğru genişliği veriyor.
+  @ViewChild('raporFieldRow') private raporFieldRowRef?: ElementRef<HTMLElement>;
+  private resizeObserver?: ResizeObserver;
+  fieldRowGenislik = signal<number | null>(null);
+
+  ngAfterViewInit(): void {
+    const el = this.raporFieldRowRef?.nativeElement;
+    if (!el) {
+      return;
+    }
+    // contentRect.width DEĞİL (field-row .panel-form .field-row{max-width:960px} sayesinde her
+    // zaman panel'in izin verdiği genişliğe kadar "kutu" olarak geniş - içeriğin GÖRÜNEN/kullanılan
+    // genişliği değil, sağdaki boşluğu da sayardı, ilk denemedeki hizasızlığın gerçek sebebi buydu).
+    // Bunun yerine SON alanın (buton) sağ kenarı ile satırın sol kenarı arasındaki GERÇEK mesafeyi
+    // ölçüyoruz - field-row'un kendi padding/border'ı yok, bu yüzden satırın sol kenarı = ilk
+    // alanın sol kenarı, bu da tam olarak "görsel içerik genişliği"ni verir.
+    this.resizeObserver = new ResizeObserver(() => this.fieldRowGenisliginiOlc());
+    this.resizeObserver.observe(el);
+    const sonAlan = el.lastElementChild;
+    if (sonAlan) {
+      this.resizeObserver.observe(sonAlan);
+    }
+    this.fieldRowGenisliginiOlc();
+  }
+
+  private fieldRowGenisliginiOlc(): void {
+    const el = this.raporFieldRowRef?.nativeElement;
+    const sonAlan = el?.lastElementChild;
+    if (!el || !sonAlan) {
+      return;
+    }
+    const satirSol = el.getBoundingClientRect().left;
+    const sonAlanSag = sonAlan.getBoundingClientRect().right;
+    this.fieldRowGenislik.set(Math.round(sonAlanSag - satirSol));
+  }
+
+  ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
+  }
 
   // ---------- DevExtreme DataGrid kolonlari (ozet + detayli rapor) ----------
   readonly ozetColumns = [
@@ -137,6 +190,25 @@ export class Rapor implements OnInit {
 
   seciliPlakalarDegisti(event: { value?: string[] | null }): void {
     this.seciliPlakalar.set(event.value ?? []);
+  }
+
+  // dx-tag-box'ın kendi çipleri gizli (bkz. rapor.html/css) - liste.ts'teki AYNI desen,
+  // gerekçe için oradaki yoruma bakın.
+  private readonly plakaCipTavani = 20;
+  readonly plakaCipGorunumu = computed(() => {
+    const secili = this.seciliPlakalar();
+    if (secili.length <= this.plakaCipTavani) {
+      return { gosterilenler: secili, fazlaSayisi: 0 };
+    }
+    const gosterilecekSayi = this.plakaCipTavani - 1;
+    return {
+      gosterilenler: secili.slice(0, gosterilecekSayi),
+      fazlaSayisi: secili.length - gosterilecekSayi,
+    };
+  });
+
+  plakaCipiKaldir(plaka: string): void {
+    this.seciliPlakalar.update((arr) => arr.filter((p) => p !== plaka));
   }
 
   baslangic = bugunIso();

@@ -1,4 +1,13 @@
-import { Component, OnInit, inject, signal } from '@angular/core';
+import {
+  Component,
+  ElementRef,
+  OnDestroy,
+  OnInit,
+  ViewChild,
+  computed,
+  inject,
+  signal,
+} from '@angular/core';
 import { Router } from '@angular/router';
 import {
   DxDataGridModule,
@@ -59,11 +68,47 @@ function isoToTarih(iso: string): Date {
   templateUrl: './liste.html',
   styleUrl: './liste.css',
 })
-export class Liste implements OnInit {
+export class Liste implements OnInit, OnDestroy {
   private readonly api = inject(AracHareketApi);
   private readonly router = inject(Router);
   private readonly importDosyaKoprusu = inject(ImportDosyaKoprusu);
   private readonly bildirim = inject(Bildirim);
+
+  // Plaka çip taşma alanının sağ kenarını Km Sayacı'nın sağ kenarıyla hizalamak için Plaka'nın
+  // sol kenarı - Km Sayacı'nın sağ kenarı arasındaki GERÇEK mesafeyi ölçüyoruz (Rapor sayfasındaki
+  // AYNI teknik, bkz. rapor.ts yorumu - sabit piksel toplamı ("770") DENENDİ ama gerçek render
+  // genişliğiyle tam örtüşmüyordu, artık DOM'dan doğrudan ölçülüyor).
+  @ViewChild('filtrePlakaAlan') private filtrePlakaAlanRef?: ElementRef<HTMLElement>;
+  @ViewChild('filtreKmAlan') private filtreKmAlanRef?: ElementRef<HTMLElement>;
+  private resizeObserver?: ResizeObserver;
+  plakaTasmaGenislik = signal<number | null>(null);
+
+  ngAfterViewInit(): void {
+    const plakaEl = this.filtrePlakaAlanRef?.nativeElement;
+    const kmEl = this.filtreKmAlanRef?.nativeElement;
+    if (!plakaEl || !kmEl) {
+      return;
+    }
+    this.resizeObserver = new ResizeObserver(() => this.plakaTasmaGenisliginiOlc());
+    this.resizeObserver.observe(plakaEl);
+    this.resizeObserver.observe(kmEl);
+    this.plakaTasmaGenisliginiOlc();
+  }
+
+  ngOnDestroy(): void {
+    this.resizeObserver?.disconnect();
+  }
+
+  private plakaTasmaGenisliginiOlc(): void {
+    const plakaEl = this.filtrePlakaAlanRef?.nativeElement;
+    const kmEl = this.filtreKmAlanRef?.nativeElement;
+    if (!plakaEl || !kmEl) {
+      return;
+    }
+    const solKenar = plakaEl.getBoundingClientRect().left;
+    const sagKenar = kmEl.getBoundingClientRect().right;
+    this.plakaTasmaGenislik.set(Math.round(sagKenar - solKenar));
+  }
 
   // ---------- Ana liste ----------
   tumHareketler = signal<AracHareketDto[]>([]);
@@ -114,6 +159,27 @@ export class Liste implements OnInit {
   filtreSeciliPlakalar = signal<string[]>([]);
   filtreSeciliPlakalarDegisti(event: { value?: string[] | null }): void {
     this.filtreSeciliPlakalar.set(event.value ?? []);
+  }
+
+  // dx-tag-box'ın kendi çipleri gizlendiği için (bkz. liste.html/css), seçili plakalar ayrı bir
+  // taşan alanda gösteriliyor - 3 satıra sığacak şekilde EN FAZLA 20 "bubble" (2026-08-10 geri
+  // bildirimi). 20'ye kadar HEPSİ plaka olarak gösteriliyor; 20'den fazlaysa son bubble'ı
+  // "+N daha" özetine ayırmak için 19 plaka + 1 özet bubble'ı = yine toplam 20'yi geçmiyor.
+  private readonly plakaCipTavani = 20;
+  readonly plakaCipGorunumu = computed(() => {
+    const secili = this.filtreSeciliPlakalar();
+    if (secili.length <= this.plakaCipTavani) {
+      return { gosterilenler: secili, fazlaSayisi: 0 };
+    }
+    const gosterilecekSayi = this.plakaCipTavani - 1;
+    return {
+      gosterilenler: secili.slice(0, gosterilecekSayi),
+      fazlaSayisi: secili.length - gosterilecekSayi,
+    };
+  });
+
+  plakaCipiKaldir(plaka: string): void {
+    this.filtreSeciliPlakalar.update((arr) => arr.filter((p) => p !== plaka));
   }
   filtreTarihAktif = false;
   filtreBaslangicDate: Date = isoToTarih(bugunIso());

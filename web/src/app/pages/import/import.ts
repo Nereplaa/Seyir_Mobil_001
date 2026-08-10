@@ -40,7 +40,10 @@ export class Import implements OnInit {
   private dogrulamaSurumu = 0;
 
   readonly columns = [
-    { dataField: 'satirNo', caption: '#', width: 45, allowEditing: false, cssClass: 'col-numeric' },
+    // Sabit width yerine minWidth: grid'in [columnAutoWidth]="true" ayarı sayesinde 3 haneli
+    // ("999") satır numaralarına varsayılan olarak yetiyor, 4-5 haneli (10000+) içerik gelirse
+    // sabit genişlik ONU KESMEZ, otomatik büyüyor (2026-08-10 geri bildirimi).
+    { dataField: 'satirNo', caption: '#', minWidth: 60, allowEditing: false, cssClass: 'col-numeric' },
     {
       dataField: 'aracPlaka',
       caption: 'Plaka',

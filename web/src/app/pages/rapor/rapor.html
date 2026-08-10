@@ -1,7 +1,15 @@
 <section class="panel panel-form">
   <div class="panel-head"><span class="panel-eyebrow">Araç Hareket Raporu</span></div>
 
-  <div class="field-row">
+  <!-- #raporFieldRow: alttaki taşma alanının genişliğini BU satırın GERÇEK render genişliğine
+       (ResizeObserver ile ölçülüyor, bkz. rapor.ts) kilitlemek için referans - CSS-only shrink-to-
+       fit denemesi (inline-flex sarmalayıcı) BAŞARISIZ oldu: .plaka-cip-tasma'nın kendi içeriği
+       (çok sayıda çip, flex-wrap) sınırsız/çok geniş bir max-content'e sahip, tarayıcı sarmalayıcının
+       genişliğini hesaplarken bunu da hesaba katıp taşma alanını sayfanın sonuna kadar genişletti
+       (2026-08-10 kullanıcı geri bildirimi ile yakalandı). Gerçek DOM ölçümü bu belirsizliği ortadan
+       kaldırıyor - elle piksel toplamaya da gerek yok, buton metni değişse (Oluşturuluyor…) bile
+       otomatik doğru kalır. -->
+  <div class="field-row" #raporFieldRow>
     <div class="field">
       <label for="tarihAraligi">Tarih Aralığı</label>
       <dx-date-range-box
@@ -20,20 +28,25 @@
     </div>
 
     <div class="field">
-      <label for="plakaSecim">Araçlar (birden fazla seçebilirsiniz)</label>
-      <dx-tag-box
-        id="plakaSecim"
-        [dataSource]="plakalar()"
-        displayExpr="aracPlaka"
-        valueExpr="aracPlaka"
-        placeholder="Plaka ara..."
-        [searchEnabled]="true"
-        [showSelectionControls]="true"
-        [multiline]="false"
-        [value]="seciliPlakalar()"
-        (onValueChanged)="seciliPlakalarDegisti($event)"
-        width="260"
-      ></dx-tag-box>
+      <label for="plakaSecim">Plaka</label>
+      <div class="plaka-secim-kutusu">
+        <dx-tag-box
+          id="plakaSecim"
+          [dataSource]="plakalar()"
+          displayExpr="aracPlaka"
+          valueExpr="aracPlaka"
+          placeholder="Plaka ara..."
+          [searchEnabled]="true"
+          [showSelectionControls]="true"
+          [multiline]="false"
+          [value]="seciliPlakalar()"
+          (onValueChanged)="seciliPlakalarDegisti($event)"
+          width="260"
+        ></dx-tag-box>
+        @if (seciliPlakalar().length > 0) {
+          <span class="plaka-secim-sayisi">{{ seciliPlakalar().length }}</span>
+        }
+      </div>
     </div>
 
     <div class="field">
@@ -54,6 +67,23 @@
       ></dx-button>
     </div>
   </div>
+
+  <!-- Liste sayfasındaki AYNI desen (bkz. liste.html yorumu) - dx-tag-box'ın kendi çipleri
+       gizli, seçim burada ayrı/sabit bir alanda gösteriliyor, alan girişlerinin hizasını
+       etkilemiyor. -->
+  @if (seciliPlakalar().length > 0) {
+    <div class="plaka-cip-tasma" [style.maxWidth.px]="fieldRowGenislik()">
+      @for (plaka of plakaCipGorunumu().gosterilenler; track plaka) {
+        <span class="plaka-chip plaka-chip-cikarilabilir">
+          {{ plaka }}
+          <button type="button" class="plaka-chip-x" (click)="plakaCipiKaldir(plaka)" [attr.aria-label]="'Kaldır: ' + plaka">×</button>
+        </span>
+      }
+      @if (plakaCipGorunumu().fazlaSayisi > 0) {
+        <span class="plaka-chip plaka-chip-tasma-uyari">+{{ plakaCipGorunumu().fazlaSayisi }} daha…</span>
+      }
+    </div>
+  }
 
   <p class="status-text" style="margin-top: 0.75rem">{{ statusText() }}</p>
 </section>

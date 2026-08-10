@@ -5,8 +5,13 @@
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  height: 2.3rem;
-  padding: 0 0.75rem;
+  /* Sabit rem yükseklik yerine (eskiden 2.3rem - diğer alanlarla eşleşmiyordu, 2026-08-10
+     geri bildirimi) box-sizing ile AYNI dikey dolgu kullanılıyor, styles.css'teki
+     .dx-texteditor-input override'ıyla (padding-top/bottom: 9px) BİREBİR aynı mantık -
+     böylece gerçek input'larla otomatik, garanti eşit yükseklikte kalıyor. */
+  box-sizing: border-box;
+  min-height: 40px;
+  padding: 9px 0.75rem;
   border: 1.5px solid var(--slate-200);
   border-radius: 8px;
   background-color: var(--paper-0);
@@ -19,3 +24,18 @@
   white-space: nowrap;
   margin: 0;
 }
+
+/* dx-tag-box'ın kendi çip pillerini gizleme kuralı ARTIK BURADA DEĞİL - global styles.css'te
+   (#plakaSecim .dx-tag-container .dx-tag). Sebep: bu dosya Angular component-scoped stil, ama
+   .dx-tag-container/.dx-tag DevExtreme'in kendi JS'iyle olusturdugu (Angular sablonuna ait
+   OLMAYAN) elemanlar - scoped bir seçici onlarla hiç eşleşmiyordu (2026-08-10'da input içinde
+   çiplerin hâlâ görünmesi bug'inin gerçek kök nedeni buydu, bkz. liste.css'teki aynı not).
+
+   Genişlik ARTIK sabit piksel DEĞİL (2026-08-10 geri bildirimi: sağ sınır "Rapor Oluştur"
+   butonunun sağ kenarı olsun) - field-row'un + Detaylı Rapor checkbox'ının + butonun toplam
+   genişliği DevExtreme'in kendi (dinamik/metne bağlı) render boyutlarına göre değişiyor, elle
+   piksel toplamak riskli olurdu. CSS-only bir shrink-to-fit sarmalayıcı (inline-flex sütun)
+   DENENDİ ve BAŞARISIZ oldu: .plaka-cip-tasma'nın kendi max-content genişliği (çok sayıda çip,
+   flex-wrap) sınırsız olduğu için tarayıcı sarmalayıcıyı sayfa sonuna kadar genişletti. Gerçek
+   çözüm: rapor.ts, ResizeObserver ile #raporFieldRow'un (rapor.html) GERÇEK render genişliğini
+   ölçüp `[style.maxWidth.px]` ile buraya doğrudan bağlıyor - bkz. rapor.ts `fieldRowGenislik`. */

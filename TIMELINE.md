@@ -408,6 +408,81 @@ Masaüstü uygulaması bu turun kapsamı dışında, native görünümünü koru
 
 ---
 
+## 2026-08-10 11:40 — Güvenlik: GitHub'a Sızmış Gerçek Bilgiler Tespit Edildi ve Giderildi
+
+Yayınlanan proje dosyaları arasında, Docker yapılandırması ve API ayarlarında gerçek, düz metin
+şifre/anahtar bilgisi bulunduğu fark edildi. Sızan tüm bilgiler (veritabanı yönetici şifresi, log
+sistemi şifreleri, oturum doğrulama anahtarı) canlı sistem üzerinde derhal değiştirildi ve
+değişikliğin gerçekten devreye girdiği doğrulandı. Projenin gizli bilgi yönetimi biçimi de kalıcı
+olarak değiştirildi — artık hiçbir gerçek şifre/anahtar GitHub'a giden dosyalarda düz metin olarak
+durmuyor, bunun yerine yerel ve GitHub'a hiç gitmeyen bir yapılandırma dosyasından okunuyor.
+
+---
+
+## 2026-08-10 11:53 — Proje Geçmişi Temizlendi: Yeni, Temiz Bir GitHub Deposu
+
+Sızan bilgilerin GitHub'ın geçmiş kayıtlarında iz bırakmadığından tamamen emin olmak için proje
+deposu sıfırdan, tek ve temiz bir başlangıç noktasıyla yeniden oluşturuldu. Eski depo (sızıntı
+geçmişini taşıdığı için) herkese kapatıldı. Yeni depoda katkı sağlayan tek hesabın proje sahibinin
+kendi hesabı olduğu ayrıca doğrulandı.
+
+---
+
+## 2026-08-10 13:09 — Çalışma Kuralı Güncellendi: Sürüm Kontrolü Artık Onaylı Şekilde Yürütülüyor
+
+Projenin çalışma kuralları güncellendi: sürüm kontrol (git) işlemleri artık, önce ne yapılacağı
+açıkça anlatılıp onay alındıktan sonra, her zaman projenin sahibinin kendi hesabı/kimliğiyle
+yürütülüyor.
+
+---
+
+## 2026-08-10 15:02 — Arayüz İnce Ayarları: Giriş Alanları, Plaka Filtresi ve Hizalama Düzeltmeleri
+
+Web arayüzünde bir dizi kullanılabilirlik ve hizalama düzeltmesi yapıldı:
+
+- Tüm ekranlardaki giriş alanları ve butonlar (yükseklik, checkbox hizası) daha rahat kullanılabilir
+  hale getirildi.
+- **Plaka filtresi** (Araç Hareketleri ve Araç Hareket Raporu ekranları) yeniden tasarlandı: seçilen
+  plakalar artık giriş kutusunun kendi içinde değil, altında ayrılmış, taşmaya duyarlı bir alanda
+  (en fazla 20 "baloncuk", fazlası "+N daha" olarak özetleniyor) gösteriliyor; giriş kutusunun
+  kendisi ise sadece kaç plaka seçildiğini gösteren bir sayı gösteriyor. Bu alanın sağ kenarı da
+  artık her iki ekranda ilgili son alanla (Araç Hareketleri'nde Km Sayacı, Araç Hareket Raporu'nda
+  Rapor Oluştur butonu) tam hizalı.
+- Plaka arama kutusundaki yer tutucu metninin ("Tümü", "Plaka ara...") dikey ortalanmama sorunu
+  giderildi.
+
+Bu turda, ilk denenen bir arayüz değişikliğinin (açılır listenin çalışmaz hale gelmesi) gerçek
+kullanım sırasında fark edilip anında geri alındığı bir düzeltme de yaşandı — arayüz artık hem
+görsel hem işlevsel olarak beklendiği gibi çalışıyor.
+
+---
+
+## 2026-08-10 16:48 — Plaka Filtresinde Kök Neden Düzeltmesi, Excel İçe Aktarma İnce Ayarı ve Graylog Sistem Panosu
+
+Öğleden sonranın devamında üç ayrı iş tamamlandı:
+
+- **Plaka filtresi — kalıcı kök neden düzeltmesi.** Bir önceki turda "düzeltildi" denen yer tutucu
+  ortalama sorunu (Araç Hareketleri ve Araç Hareket Raporu ekranlarında "Tümü"/"Plaka ara..."
+  metninin üst kenara yakın durması) gerçekte tam çözülmemişti. Kullanılan arayüz bileşen
+  kütüphanesinin kendi iç davranışı incelenerek asıl neden bulundu: kutunun görünen (40px)
+  yüksekliği ile içindeki gerçek içerik kutusunun yüksekliği arasında bir uyumsuzluk vardı — dış
+  kutu büyümüş görünüyordu ama iç kutu büyümemişti, metin de o küçük iç kutuya göre ortalandığı
+  için üstte kalıyordu. İç kutuya doğrudan bir minimum yükseklik verilerek kalıcı olarak
+  düzeltildi. Aynı incelemede, seçili plaka sayısını gösteren göstergenin ("10 seçildi" gibi)
+  kutunun solunda arama yazısıyla üst üste bindiği fark edildi, sağ kenara taşındı.
+- **Excel İçe Aktarma ekranında küçük bir düzeltme.** Önizleme tablosundaki satır numarası
+  sütunu, 3 haneli sayılara zor sığıyordu; artık gerektiğinde otomatik genişleyen, esnek bir
+  genişliğe geçirildi.
+- **Graylog'da "Seyir Mobil - Sistem Panosu" adında yeni bir sistem izleme panosu (dashboard)
+  oluşturuldu — 8 grafik/tablo widget'ı içeriyor:** istek hacmi (zaman içinde), en çok kullanılan
+  uç noktalar, HTTP durum kodu dağılımı, ortalama yanıt süresi, en yavaş 10 istek, kullanıcı bazlı
+  aktivite, rol dağılımı (Admin/Viewer), en çok tıklanan sayfa/eylem. Bu pano, aylar önce kurulan
+  merkezi log altyapısının (backend'in her API isteğini ve web'deki her tıklamayı Graylog'a
+  kaydetmesi) üzerine kurulan ilk görsel izleme katmanı — sistemin gerçek kullanım verisiyle
+  test edildi, doğru sonuçlar üretti.
+
+---
+
 ## 🔜 Sıradaki Adımlar
 
 - [x] Web istemcisinin eklenmesi (aynı backend API üzerinden)

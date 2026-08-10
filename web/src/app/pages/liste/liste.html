@@ -3,81 +3,44 @@
   <div class="field-row">
     <div class="field">
       <label for="wizardPlaka">1. Plaka</label>
-      <dx-select-box
-        id="wizardPlaka"
-        [dataSource]="plakalar()"
-        displayExpr="aracPlaka"
-        valueExpr="aracId"
-        placeholder="— Seçiniz —"
-        [value]="wizardAracId"
-        (onValueChanged)="wizardPlakaDegisti($event)"
-        width="200"
-      ></dx-select-box>
+      <dx-select-box id="wizardPlaka" [dataSource]="plakalar()" displayExpr="aracPlaka" valueExpr="aracId"
+        placeholder="— Seçiniz —" [value]="wizardAracId" (onValueChanged)="wizardPlakaDegisti($event)"
+        width="200"></dx-select-box>
     </div>
 
     @if (wizardAracId != null) {
-      <div class="field">
-        <label for="wizardTarih">2. Veri Tarihi</label>
-        <dx-date-box
-          id="wizardTarih"
-          type="date"
-          pickerType="calendar"
-          displayFormat="dd.MM.yyyy"
-          [value]="wizardTarihDate"
-          (onValueChanged)="wizardTarihDegisti($event)"
-          width="160"
-        ></dx-date-box>
-      </div>
-      <div class="field">
-        <label>&nbsp;</label>
-        <dx-button
-          text="Tarihi Onayla →"
-          type="normal"
-          stylingMode="outlined"
-          [disabled]="sinirlarHesaplaniyor()"
-          (onClick)="tarihiOnayla()"
-        ></dx-button>
-      </div>
+    <div class="field">
+      <label for="wizardTarih">2. Veri Tarihi</label>
+      <dx-date-box id="wizardTarih" type="date" pickerType="calendar" displayFormat="dd.MM.yyyy"
+        [value]="wizardTarihDate" (onValueChanged)="wizardTarihDegisti($event)" width="160"></dx-date-box>
+    </div>
+    <div class="field">
+      <label>&nbsp;</label>
+      <dx-button text="Tarihi Onayla →" type="normal" stylingMode="outlined" [disabled]="sinirlarHesaplaniyor()"
+        (onClick)="tarihiOnayla()"></dx-button>
+    </div>
     }
 
     @if (tarihOnaylandi()) {
-      <div class="field">
-        <label for="wizardHiz">3. Hız</label>
-        <dx-number-box
-          id="wizardHiz"
-          [min]="0"
-          [max]="300"
-          [value]="wizardHiz"
-          (onValueChanged)="wizardHiz = $event.value ?? 0"
-          width="90"
-        ></dx-number-box>
-      </div>
-      <div class="field">
-        <label for="wizardKm">4. Km Sayacı</label>
-        <dx-number-box
-          id="wizardKm"
-          format="#,##0.00"
-          [min]="kmMin()"
-          [max]="kmMax()"
-          [value]="wizardKm"
-          (onValueChanged)="wizardKm = $event.value ?? 0"
-          width="150"
-        ></dx-number-box>
-      </div>
-      <div class="field">
-        <label>&nbsp;</label>
-        <dx-button
-          text="Ekle"
-          type="default"
-          [disabled]="!ekleEtkin() || ekleniyor()"
-          (onClick)="ekle()"
-        ></dx-button>
-      </div>
+    <div class="field">
+      <label for="wizardHiz">3. Hız</label>
+      <dx-number-box id="wizardHiz" [min]="0" [max]="300" [value]="wizardHiz"
+        (onValueChanged)="wizardHiz = $event.value ?? 0" width="90"></dx-number-box>
+    </div>
+    <div class="field">
+      <label for="wizardKm">4. Km Sayacı</label>
+      <dx-number-box id="wizardKm" format="#,##0.00" [min]="kmMin()" [max]="kmMax()" [value]="wizardKm"
+        (onValueChanged)="wizardKm = $event.value ?? 0" width="150"></dx-number-box>
+    </div>
+    <div class="field">
+      <label>&nbsp;</label>
+      <dx-button text="Ekle" type="default" [disabled]="!ekleEtkin() || ekleniyor()" (onClick)="ekle()"></dx-button>
+    </div>
     }
   </div>
 
   @if (sinirBilgisi()) {
-    <p class="status-text" style="white-space: pre-line; margin-top: 0.75rem">{{ sinirBilgisi() }}</p>
+  <p class="status-text" style="white-space: pre-line; margin-top: 0.75rem">{{ sinirBilgisi() }}</p>
   }
 </section>
 
@@ -90,60 +53,41 @@
        flex-wrap:nowrap KESİN tek satırı garanti ediyor; çok dar ekranlarda (bu, masaüstü odaklı
        bir iç sistem olduğu için normalde beklenmiyor) satır kırılmak yerine yatay kaydırılıyor. -->
   <div class="filtre-toolbar">
-    <div class="field">
-      <label for="filtrePlaka">Plaka (birden fazla seçebilirsiniz)</label>
-      <dx-tag-box
-        id="filtrePlaka"
-        [dataSource]="filtrePlakaListesi()"
-        placeholder="Tümü"
-        [searchEnabled]="true"
-        [showSelectionControls]="true"
-        [multiline]="false"
-        [value]="filtreSeciliPlakalar()"
-        (onValueChanged)="filtreSeciliPlakalarDegisti($event)"
-        width="220"
-      ></dx-tag-box>
+    <div class="field" #filtrePlakaAlan>
+      <label for="filtrePlaka">Plaka</label>
+      <!-- İçeride plaka/çip göstermiyoruz artık (2026-08-10 geri bildirimi) - kutunun kendi
+           çipleri CSS ile gizli (liste.css), yerine seçili sayıyı gösteren kendi yazdığımız bir
+           katman var (.plaka-secim-sayisi, pointer-events:none - tıklamalar gerçek input'a geçer,
+           dropdown açılmaya devam eder). -->
+      <div class="plaka-secim-kutusu">
+        <dx-tag-box id="filtrePlaka" [dataSource]="filtrePlakaListesi()" placeholder="Tümü" [searchEnabled]="true"
+          [showSelectionControls]="true" [multiline]="false" [value]="filtreSeciliPlakalar()"
+          (onValueChanged)="filtreSeciliPlakalarDegisti($event)" width="220"></dx-tag-box>
+        @if (filtreSeciliPlakalar().length > 0) {
+          <span class="plaka-secim-sayisi">{{ filtreSeciliPlakalar().length }}</span>
+        }
+      </div>
     </div>
     <div class="field">
       <label for="filtreTarih">Tarih Aralığı</label>
       <div style="display: flex; align-items: center; gap: 0.4rem">
         <dx-check-box [value]="filtreTarihAktif" (onValueChanged)="filtreTarihAktif = !!$event.value"></dx-check-box>
-        <dx-date-range-box
-          id="filtreTarih"
-          [startDate]="filtreBaslangicDate"
-          (startDateChange)="filtreBaslangicDateDegisti($event)"
-          [endDate]="filtreBitisDate"
-          (endDateChange)="filtreBitisDateDegisti($event)"
-          startDatePlaceholder="Başlangıç"
-          endDatePlaceholder="Bitiş"
-          labelMode="hidden"
-          displayFormat="dd.MM.yyyy"
-          [showClearButton]="false"
-          [disabled]="!filtreTarihAktif"
-          width="220"
-        ></dx-date-range-box>
+        <dx-date-range-box id="filtreTarih" [startDate]="filtreBaslangicDate"
+          (startDateChange)="filtreBaslangicDateDegisti($event)" [endDate]="filtreBitisDate"
+          (endDateChange)="filtreBitisDateDegisti($event)" startDatePlaceholder="Başlangıç" endDatePlaceholder="Bitiş"
+          labelMode="hidden" displayFormat="dd.MM.yyyy" [showClearButton]="false" [disabled]="!filtreTarihAktif"
+          width="280"></dx-date-range-box>
       </div>
     </div>
     <div class="field">
       <label for="filtreHiz">Hız</label>
-      <dx-number-box
-        id="filtreHiz"
-        [showClearButton]="true"
-        [value]="$any(filtreHiz)"
-        (onValueChanged)="filtreHiz = $event.value ?? null"
-        width="90"
-      ></dx-number-box>
+      <dx-number-box id="filtreHiz" [showClearButton]="true" [value]="$any(filtreHiz)"
+        (onValueChanged)="filtreHiz = $event.value ?? null" width="90"></dx-number-box>
     </div>
-    <div class="field">
+    <div class="field" #filtreKmAlan>
       <label for="filtreKm">Km Sayacı</label>
-      <dx-number-box
-        id="filtreKm"
-        format="#,##0.00"
-        [showClearButton]="true"
-        [value]="$any(filtreKm)"
-        (onValueChanged)="filtreKm = $event.value ?? null"
-        width="120"
-      ></dx-number-box>
+      <dx-number-box id="filtreKm" format="#,##0.00" [showClearButton]="true" [value]="$any(filtreKm)"
+        (onValueChanged)="filtreKm = $event.value ?? null" width="120"></dx-number-box>
     </div>
 
     <div class="filtre-toolbar-actions">
@@ -152,39 +96,45 @@
       <dx-button text="Yenile" type="normal" stylingMode="outlined" (onClick)="refreshGrid()"></dx-button>
       <dx-button text="Sil" type="danger" [disabled]="!seciliHareket()" (onClick)="sil()"></dx-button>
       <input #importDosyaSecici type="file" accept=".xlsx" hidden (change)="excelDenAktarSecildi($event)" />
-      <dx-button
-        text="Excel'den Veri Aktar"
-        type="normal"
-        stylingMode="outlined"
-        (onClick)="importDosyaSecici.click()"
-      ></dx-button>
+      <dx-button text="Excel'den Veri Aktar" type="normal" stylingMode="outlined"
+        (onClick)="importDosyaSecici.click()"></dx-button>
     </div>
   </div>
-  @if (filtreHatasi()) {
-    <p class="error-text" style="margin-top: 0.5rem">{{ filtreHatasi() }}</p>
+  <!-- Seçili plaka çipleri artık dx-tag-box'ın KENDİ içinde DEĞİL (input'un tek-satır
+       yüksekliğini/hizasını bozuyordu, gerçek kullanıcı geri bildirimi 2026-08-10) - dx-tag-box
+       KENDİSİ DOKUNULMADAN (multiline/yapı vs. aynı, önceki turdaki regresyon dersi) sadece
+       kendi çip pillerini (.dx-tag) CSS ile GİZLİYORUZ (bkz. liste.css #filtrePlaka kuralı),
+       seçim listesi burada, satırın ALTINDA, sabit/taşan bir alanda ayrıca gösteriliyor - toolbar
+       satırının hizası kaç plaka seçilirse seçilsin ASLA değişmiyor (normal akışta, sabit
+       max-height + overflow:hidden ile büyümesi de sınırlı). -->
+  @if (filtreSeciliPlakalar().length > 0) {
+    <div class="plaka-cip-tasma" [style.maxWidth.px]="plakaTasmaGenislik()">
+      @for (plaka of plakaCipGorunumu().gosterilenler; track plaka) {
+        <span class="plaka-chip plaka-chip-cikarilabilir">
+          {{ plaka }}
+          <button type="button" class="plaka-chip-x" (click)="plakaCipiKaldir(plaka)" [attr.aria-label]="'Kaldır: ' + plaka">×</button>
+        </span>
+      }
+      @if (plakaCipGorunumu().fazlaSayisi > 0) {
+        <span class="plaka-chip plaka-chip-tasma-uyari">+{{ plakaCipGorunumu().fazlaSayisi }} daha…</span>
+      }
+    </div>
   }
 
-  <dx-data-grid
-    [dataSource]="gosterilenHareketler()"
-    [columns]="dataGridColumns"
-    [showBorders]="true"
-    [showColumnLines]="true"
-    [showRowLines]="true"
-    [rowAlternationEnabled]="true"
-    [selection]="{ mode: 'single' }"
-    [paging]="{ pageSize: ilkSayfaBoyutu }"
-    [pager]="{
+  @if (filtreHatasi()) {
+  <p class="error-text" style="margin-top: 0.5rem">{{ filtreHatasi() }}</p>
+  }
+
+  <dx-data-grid [dataSource]="gosterilenHareketler()" [columns]="dataGridColumns" [showBorders]="true"
+    [showColumnLines]="true" [showRowLines]="true" [rowAlternationEnabled]="true" [selection]="{ mode: 'single' }"
+    [paging]="{ pageSize: ilkSayfaBoyutu }" [pager]="{
       visible: true,
       showPageSizeSelector: true,
       allowedPageSizes: sayfaBoyutuSecenekleri,
       showInfo: true,
       showNavigationButtons: true
-    }"
-    [searchPanel]="{ visible: true, placeholder: 'Ara...' }"
-    [export]="{ enabled: true }"
-    (onSelectionChanged)="onSelectionChanged($event)"
-    (onExporting)="onExporting($event)"
-  ></dx-data-grid>
+    }" [searchPanel]="{ visible: true, placeholder: 'Ara...' }" [export]="{ enabled: true }"
+    (onSelectionChanged)="onSelectionChanged($event)" (onExporting)="onExporting($event)"></dx-data-grid>
 
   <p class="status-text" style="margin-top: 0.75rem">{{ statusText() }}</p>
 </section>

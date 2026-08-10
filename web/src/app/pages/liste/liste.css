@@ -28,3 +28,30 @@
   flex: none;
   padding-left: 1.25rem;
 }
+
+/* ---------- Plaka çiplerinin taşma alanı (2026-08-10 geri bildirimi) ---------- */
+/* KÖK NEDEN (önceki iki turun dersi): dx-tag-box'ın KENDİ içinde çip gösterip büyümesi
+   (multiline) toolbar satırının hizasını bozuyordu; tek-satıra zorlamak (multiline:false) da
+   iç yapısıyla (.dx-tag-container'ın kendi bağımsız dolgusu) sürekli uğraş gerektiriyordu, bir
+   ara denenen "dış kutuyu flex yap" çözümü ise DevExtreme'in dropdown/genişlik hesaplamasını
+   BOZDU (lookup açılmaz oldu). GÜVENLİ ÇÖZÜM: dx-tag-box'a (multiline/yapı) HİÇ dokunulmuyor -
+   sadece kendi çip pillerini (.dx-tag) görünmez yapıyoruz, seçili plakalar TAMAMEN AYRI, kendi
+   HTML/CSS'imizle yönettiğimiz bir alanda gösteriliyor. Bu alan toolbar'ın NORMAL AKIŞINDA
+   (position:absolute DEĞİL) bir sonraki kardeş - yani toolbar satırının kendisi kaç plaka
+   seçilirse seçilsin ASLA etkilenmiyor, sadece bu alan (sabit max-height + overflow:hidden ile
+   sınırlı) büyüyüp grid'i biraz aşağı itebilir - "hizayı bozma" burada toolbar satırının kendi
+   iç hizası anlamında garanti ediliyor. */
+/* NOT (2026-08-10 duzeltme): "#filtrePlaka .dx-tag-container .dx-tag { display:none }" kurali
+   ONCEDEN burada idi ama hicbir zaman calismiyordu - Angular'in component-scoped stilleri
+   (ViewEncapsulation) her secicinin sonuna gizli bir "_ngcontent-xxx" attribute'u ekliyor, ama
+   .dx-tag-container/.dx-tag Angular sablonunun degil DOGRUDAN DevExtreme widget'inin kendi JS'iyle
+   olusturdugu elemanlar - bu attribute onlarda YOK, secici hic eslesmiyordu (input'un icinde
+   cipler gorunmeye devam etti, "sistem calismiyor" bug'inin gercek kaynagi buydu). Kural artik
+   scope'suz global styles.css'te (#filtrePlaka .dx-tag-container .dx-tag) - oradan calisiyor. */
+
+/* .plaka-cip-tasma / .plaka-chip-* ORTAK stilleri styles.css'te (birden fazla sayfa kullanıyor,
+   bkz. rapor.css) - burada max-width YOK: Plaka'nın sol kenarından Km Sayacı'nın sağ kenarına
+   kadarki genişlik ARTIK sabit piksel toplamıyla DEĞİL, rapor.css'teki AYNI teknikle (bkz. o
+   dosyadaki gerekçe) gerçek DOM ölçümüyle hesaplanıyor - liste.ts, ResizeObserver ile
+   #filtrePlakaAlan/#filtreKmAlan (liste.html) arasındaki gerçek mesafeyi ölçüp
+   `[style.maxWidth.px]` ile buraya doğrudan bağlıyor, bkz. liste.ts `plakaTasmaGenislik`. */

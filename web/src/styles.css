@@ -176,6 +176,93 @@ label {
   line-height: 1.4;
 }
 
+/* ---------- Plaka seçim kutusu — içeride çip/plaka YOK, sadece seçili SAYI (Liste + Rapor)
+   2026-08-10 geri bildirimi: "içeride plaka gözükmesine gerek yok, seçilen sayı yazsın" ---------- */
+.plaka-secim-kutusu {
+  position: relative;
+}
+
+.plaka-secim-sayisi {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  /* SAĞDA duruyor (2026-08-10 geri bildirimi: solda arama yazısıyla üst üste biniyordu) - kutunun
+     sol tarafı arama için serbest kalıyor, sayı sağ kenara, dist CSS'teki .dx-editor-outlined'ın
+     kendi yatay dolgusuyla (12px) hizalı duruyor. */
+  justify-content: flex-end;
+  padding-right: 12px;
+  /* Tıklamalar bu katmanın ALTINDAKİ gerçek dx-tag-box'a geçsin - dropdown açılmaya devam eder,
+     bu SADECE görsel bir üst katman. */
+  pointer-events: none;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--ink-900);
+  font-size: 0.95rem;
+}
+
+/* ---------- Plaka filtresi çip taşma alanı (Liste + Rapor) — 2026-08-10 geri bildirimi ---------- */
+/* dx-tag-box'ların KENDİ çip gösterimi (multiline büyütmesi ya da tek-satır sıkışması) toolbar
+   satırlarının hizasını bozuyordu (bkz. liste.css'teki detaylı gerekçe yorumu). Çözüm: dx-tag-box
+   HİÇ değiştirilmiyor, sadece kendi pillerini (.dx-tag) sayfa bazlı gizleyip (#filtrePlaka /
+   #plakaSecim, bkz. ilgili .css) seçimi burada AYRI, sabit yükseklikte bir alanda gösteriyoruz -
+   toolbar/field-row'un normal akışına ait bir kardeş, o satırın kendi hizasını ASLA etkilemiyor.
+   max-width SAYFA BAZLI override ediliyor (bkz. liste.css/rapor.css), burada sadece ortak iskelet.
+
+   .dx-tag gizleme kuralları KASITLI OLARAK BURADA (global, scope'suz) - liste.css/rapor.css'e
+   (Angular component-scoped stiller) YAZILAMAZ: Angular her component'in stiline gizli bir
+   "_ngcontent-xxx" attribute'u ekleyip seçicileri ona göre daraltıyor, ama .dx-tag-container/
+   .dx-tag Angular şablonunun değil DEVEXTREME WIDGET'ININ kendi JS'iyle sonradan DOM'a eklediği
+   elemanlar - o attribute'u hiç taşımıyorlar, component-scoped bir seçici onlarla ASLA eşleşmez
+   (2026-08-10: tam da bu yüzden çipler input içinde gizlenmeden görünmeye devam ediyordu, sessiz
+   bir bug - build hatasız geçiyordu çünkü CSS geçerliydi, sadece hiçbir elemanla eşleşmiyordu). */
+#filtrePlaka .dx-tag-container .dx-tag,
+#plakaSecim .dx-tag-container .dx-tag {
+  display: none !important;
+}
+
+.plaka-cip-tasma {
+  display: flex;
+  flex-wrap: wrap;
+  align-content: flex-start;
+  gap: 0.4rem;
+  max-height: 220px;
+  overflow: hidden;
+  margin-top: 0.6rem;
+  padding: 0.6rem;
+  border: 1px solid var(--slate-150);
+  border-radius: 8px;
+  background-color: var(--paper-50);
+}
+
+.plaka-chip-cikarilabilir {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding-right: 0.3rem;
+}
+
+.plaka-chip-x {
+  border: none;
+  background: transparent;
+  color: var(--ink-500);
+  cursor: pointer;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 0.95rem;
+  line-height: 1;
+  padding: 0;
+}
+
+.plaka-chip-x:hover {
+  color: var(--danger-600);
+}
+
+.plaka-chip-tasma-uyari {
+  color: var(--ink-500);
+  background-color: transparent;
+  border-style: dashed;
+}
+
 /* ---------- Durum çipleri (Import önizleme grid'i) ---------- */
 .chip {
   display: inline-flex;
@@ -279,10 +366,22 @@ label {
   border-radius: 8px;
   border-color: var(--slate-200);
   background-color: var(--paper-0);
+  min-height: 40px !important;
+  box-sizing: border-box;
 }
 
 .dx-texteditor.dx-editor-outlined.dx-state-hover {
   border-color: var(--slate-300);
+}
+
+/* Input'lar 40px'e büyüyünce placeholder metni ("Plaka ara...", "Tümü", "Seçiniz" vb.) üst
+   kenara yakın kaldı - DevExtreme'in .dx-placeholder'ı `position:absolute; height:100%` ama
+   metni dikey ORTALAMIYOR (line-height:normal, üstten akıyor). Tüm dx-*-box bileşenleri AYNI
+   sınıfı paylaştığı için tek bu kural her yerdeki placeholder'ı düzeltiyor (2026-08-10 geri
+   bildirimi). */
+.dx-placeholder {
+  display: flex;
+  align-items: center;
 }
 
 /* Odak halkası - dist CSS'in dx-state-focused kuralı (2 sınıf: .dx-editor-outlined.dx-state-focused)
@@ -291,6 +390,64 @@ label {
 .dx-texteditor.dx-editor-outlined.dx-state-focused {
   border-color: var(--route-600);
   box-shadow: 0 0 0 3px rgba(20, 108, 148, 0.14);
+}
+
+/* Tüm giriş alanları (text/number/date/select/tag-box, date-range-box - hepsi AYNI iç
+   `.dx-texteditor-input` iskeletini paylaşıyor) çok ince duruyordu (2026-08-10 geri bildirimi:
+   "çok ince gözüküyor, kullanımı rahat olsun") - varsayılan dikey dolgu (5px/5px, ~31px toplam
+   yükseklik) artırıldı. SADECE dikey dolguya dokunuluyor (padding-top/bottom) - yatay dolgu
+   (padding-inline-end) dropdown ok'u/temizle butonu olan bileşenlerde metnin ikonun altına
+   girmemesi için ayrı bir kuralla geliyor, ona dokunmuyoruz.
+   NOT: seçici BİLEREK dist CSS'teki `.dx-texteditor.dx-editor-outlined .dx-texteditor-input`
+   ile AYNI özgüllükte (2 ata sınıfı + 1 hedef sınıf) - düz `.dx-texteditor-input` (1 sınıf)
+   denendi, dist'in daha özgül kuralı karşısında KAYBETTİĞİ görüldü (canlı DOM'da doğrulandı,
+   padding hiç değişmiyordu), bu yüzden aynı özgüllüğe çıkarıldı. */
+.dx-texteditor.dx-editor-outlined .dx-texteditor-input {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+/* dx-tag-box (plaka filtreleri) AYRI bir iç kabuk kullanıyor (.dx-tag-container - dist CSS'te
+   AYNI eleman .dx-texteditor-container VE .dx-texteditor-input-container sınıflarını da taşıyor,
+   çipleri + placeholder'ı tutan yapı budur).
+   ÖNEMLİ DERS (2026-08-10): İlk denemede dış kabuğa (.dx-texteditor.dx-editor-outlined)
+   `display:flex` verilmişti - bu, DevExtreme'in dropdown/genişlik hesaplamalarını BOZDU
+   (input'lar küçüldü, lookup açılmayan bir butona döndü). O değişiklik GERİ ALINDI - dış
+   kabuğun görünüm modeline (display) ASLA dokunulmuyor.
+
+   GERÇEK KÖK NEDEN (2026-08-10, "hâlâ düzelmedi" geri bildirimi üzerine devextreme'in kendi dist
+   CSS'i (node_modules/devextreme/dist/css/dx.fluent.saas.light.css) okunarak bulundu):
+   1) `.dx-tag-container` dist'te `height:100%` ile büyütülüyor - ama bu YÜZDE değeri, dış kabuğun
+      (`.dx-texteditor.dx-editor-outlined`) sadece min-height'i olduğu (height DEĞİL) için CSS'in
+      klasik tuzağına takılıyor: min-height, yüzde-yükseklik çözümlemesi için "kesin yükseklik"
+      SAYILMAZ, bu yüzden height:100% aslında "auto"ya düşüyor. Sonuç: `.dx-tag-container` kendi
+      DOĞAL (~30px) yüksekliğinde kalıyor, dış kutu 40px'e büyümüş olsa bile İÇ kutu büyümüyor -
+      aradaki fark, kutunun ALTINDA boş alan olarak kalıyor (normal blok akışı üstten hizalar).
+      Placeholder da bu KISA iç kutuya göre ortalandığı için, gözle görünen (40px) alanın ÜST
+      kısmında kalmış gibi duruyor - önceki turda denenen `position:relative`/`inset:0` bu yüzden
+      TEK BAŞINA yetmedi (kutu zaten position:relative'di, sorun hep YANLIŞ BOYUTTAKİ kutuydu).
+      Çözüm: `.dx-tag-container`'a DOĞRUDAN `min-height` veriyoruz - yüzde zincirine güvenmiyoruz,
+      artık gerçekten 40px, altındaki placeholder ortalaması artık DOĞRU (tam) kutuya göre.
+   2) `.dx-tag-container`'ın kendi varsayılan dolgusu (5px/5px) dist'te İKİ sınıflı bir seçiciyle
+      geliyor (`.dx-tagbox .dx-tag-container`) - bizim ÖNCEKİ TEK sınıflı `.dx-tag-container`
+      kuralımız (9px/9px) bu YÜZDEN hiç kazanamıyordu (düşük özgüllük, dist'in özgüllüğü CSS
+      yükleme sırasından BAĞIMSIZ olarak kazanıyor - sessiz bir başka özgüllük kaybı, projede
+      tekrar eden bir desen). Aynı özgüllüğe çıkarıp gerçekten uygulanmasını sağlıyoruz. */
+.dx-tag-container {
+  min-height: 40px;
+  position: relative;
+}
+
+.dx-tagbox .dx-tag-container {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+
+.dx-tag-container .dx-placeholder {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
 }
 
 /* Checkbox - varsayılan işaretli rengi DevExtreme'in stok mavisi (#5486ff benzeri, --dx-color-*
@@ -318,8 +475,17 @@ label {
    boyut) öngörülebilir değildi - bu yüzden TEK, garanti kazanan bir değerle override edildi.
    !important burada BİLİNÇLİ (projenin genel kuralı değil, sadece DevExtreme'in kendi iç
    cascade'iyle rekabet etmemek için istisna). */
+/* dist CSS'in `.dx-button{height:32px}` gibi taban kuralları var - content'e verilen dolgu
+   artışı bu SABİT yükseklik yüzünden dışarıya yansımıyordu (canlı DOM'da doğrulandı, buton
+   32px'te sabit kalıyordu). min-height + !important ile bu tabanı aşıyoruz - input'larla
+   (40px) AYNI hedefe (2026-08-10 geri bildirimi). */
+.dx-button {
+  min-height: 40px !important;
+  height: auto !important;
+}
+
 .dx-button .dx-button-content {
-  padding: 0.55rem 1rem !important;
+  padding: 0.65rem 1.1rem !important;
 }
 
 .dx-button .dx-button-content .dx-button-text {
