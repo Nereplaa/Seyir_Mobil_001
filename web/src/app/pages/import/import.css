@@ -1,0 +1,42 @@
+.import-actions-row {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 0.75rem;
+}
+
+.dosya-hatasi-banner {
+  margin-top: 1rem;
+  padding: 0.85rem 1rem;
+  background-color: var(--danger-100);
+  border: 1px solid var(--danger-600);
+  border-radius: 6px;
+  color: var(--danger-600);
+}
+
+.dosya-hatasi-banner p {
+  margin: 0.35rem 0 0;
+  font-size: 0.9rem;
+}
+
+/* Çakışma Aksiyonu sütunu, seçim yapılmamışken boş görünüyordu - kullanıcı bunun tıklanıp bir
+   şey seçilmesi gereken bir hücre olduğunu anlayamıyordu (2026-08-07 geri bildirimi). Gerçek bir
+   çakışma varsa (karar ZORUNLU) dikkat çeken, tıklanabilir görünümlü kesikli bir "Seçiniz" etiketi;
+   çakışma yoksa (seçim opsiyonel) sadece soluk bir "—" - aciliyet farkı görsel olarak da ayrışıyor. */
+.aksiyon-placeholder {
+  color: var(--ink-500);
+  font-size: 0.85rem;
+}
+
+.aksiyon-placeholder-required {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.6rem;
+  border: 1px dashed var(--route-600);
+  border-radius: 999px;
+  color: var(--route-600);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+}

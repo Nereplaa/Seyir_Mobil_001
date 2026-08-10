@@ -1,0 +1,31 @@
+<!-- Login ekranı kendi tam-sayfa marka/rota panelini gösteriyor (bkz. login.html) - üstteki
+     genel app header'ı TEKRAR bir marka şeridi gibi durup gereksiz yer kaplıyordu (kullanıcı
+     geri bildirimi, 2026-08-07: "sil"). ROTAYA göre gizleniyor (auth durumuna göre DEĞİL -
+     bkz. app.ts loginEkraninda yorumu, token geçerliyken /login'e gelinebiliyor). -->
+@if (!loginEkraninda()) {
+  <header class="app-header">
+    <div class="brand">
+      <svg class="brand-mark" width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4" />
+        <path d="M15.5 8.5 L11 11 L8.5 15.5 L13 13 Z" fill="currentColor" />
+      </svg>
+      <h1>Seyir Mobil <span class="brand-sub">Araç Takip</span></h1>
+    </div>
+    <nav>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Araç Hareketleri</a>
+      <a routerLink="/rapor" routerLinkActive="active">Araç Hareket Raporu</a>
+      <a routerLink="/import" routerLinkActive="active">Excel İçe Aktar</a>
+      @if (auth.role() === 'Admin') {
+        <a routerLink="/admin" routerLinkActive="active">Admin Paneli</a>
+      }
+    </nav>
+    <div class="kullanici-bilgisi">
+      <span class="kullanici-adi">{{ auth.username() }} <span class="kullanici-rol">({{ auth.role() }})</span></span>
+      <dx-button text="Çıkış Yap" stylingMode="outlined" (onClick)="cikisYap()"></dx-button>
+    </div>
+  </header>
+}
+
+<main>
+  <router-outlet />
+</main>

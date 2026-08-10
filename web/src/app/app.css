@@ -1,0 +1,130 @@
+/* :host (app-root) flex sütunu - header + main'in TOPLAM yüksekliği her zaman TAM olarak
+   viewport'u dolduruyor (min-height, height DEĞİL - uzun sayfalarda normal büyüyüp scroll
+   edebiliyor). Login ekranındaki gereksiz dikey scroll bar'ın kök nedeni buydu: eskiden main'in
+   yüksekliği "100vh - 3.4rem" gibi elle tahmin edilen bir header yüksekliğiyle hesaplanıyordu,
+   gerçek header yüksekliğiyle birebir tutmuyordu. Artık flexbox kesin hesaplıyor, tahmin yok
+   (2026-08-07 düzeltme turu). */
+:host {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.app-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.65rem 1.25rem;
+  background-color: var(--ink-900);
+  color: var(--paper-0);
+  border-bottom: 1px solid var(--route-700);
+}
+
+.brand {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+}
+
+.brand-mark {
+  color: var(--route-500);
+  flex: none;
+}
+
+.app-header h1 {
+  font-family: var(--font-mono);
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  margin: 0;
+  white-space: nowrap;
+  color: var(--paper-0);
+}
+
+.brand-sub {
+  font-weight: 400;
+  color: var(--slate-300);
+  margin-left: 0.35rem;
+}
+
+.app-header nav {
+  display: flex;
+  gap: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.app-header nav a {
+  position: relative;
+  color: var(--slate-300);
+  text-decoration: none;
+  font-size: 0.9rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 4px;
+  border-bottom: 2px solid transparent;
+}
+
+.app-header nav a:hover {
+  background-color: rgba(255, 255, 255, 0.06);
+  color: var(--paper-0);
+}
+
+.app-header nav a.active {
+  color: var(--paper-0);
+  border-bottom-color: var(--route-500);
+}
+
+.kullanici-bilgisi {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  color: var(--slate-300);
+  font-size: 0.85rem;
+}
+
+.kullanici-adi {
+  white-space: nowrap;
+}
+
+.kullanici-rol {
+  color: var(--slate-300);
+  opacity: 0.75;
+}
+
+/* "Çıkış Yap" artık dx-button (native <button> DEĞİL) - DevExtreme'in kendi ic DOM'una
+   (dx-button-text vb.) ulaşmak için ::ng-deep gerekiyor, aksi halde koyu header üzerinde
+   bileşenin varsayılan koyu metin rengiyle okunaksız kalıyor. */
+.kullanici-bilgisi ::ng-deep .dx-button {
+  background-color: transparent;
+  border-color: var(--ink-700);
+}
+
+.kullanici-bilgisi ::ng-deep .dx-button-content .dx-button-text {
+  color: var(--slate-300);
+}
+
+.kullanici-bilgisi ::ng-deep .dx-button:hover {
+  background-color: rgba(255, 255, 255, 0.08);
+}
+
+.kullanici-bilgisi ::ng-deep .dx-button:hover .dx-button-content .dx-button-text {
+  color: var(--paper-0);
+}
+
+main {
+  padding: 1.25rem 1.5rem;
+  width: 100%;
+  flex: 1;
+  min-height: 0;
+  background-color: var(--paper-50);
+  /* Çok soluk nokta/çizgi dokusu - login'in sol panelindeki AYNI teknik (repeating-linear-gradient),
+     ama açık zemine uygun çok düşük opaklıkta. Amaç: geniş ekranlarda az veri olan panellerin
+     etrafındaki boşluğun "unstyled/bitmemiş" değil, kasıtlı/dokulu bir zemin gibi görünmesi
+     ("boş tuval bırakma" geri bildirimi, 2026-08-07). Metin/tablo okunabilirliğini bozmayacak
+     kadar soluk (rgba alpha 0.028) - göz kontrolüyle ayarlandı. */
+  background-image:
+    repeating-linear-gradient(0deg, rgba(20, 108, 148, 0.028) 0 1px, transparent 1px 52px),
+    repeating-linear-gradient(90deg, rgba(20, 108, 148, 0.028) 0 1px, transparent 1px 52px);
+}

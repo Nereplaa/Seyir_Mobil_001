@@ -1,0 +1,30 @@
+/* Sayfalama artık dx-data-grid'in kendi pager'ı tarafından yönetiliyor, özel stil gerekmiyor. */
+
+/* Filtre alanları + tüm aksiyon butonları TEK satırda (2026-08-07 geri bildirimi) - global
+   .field-row'un aksine (flex-wrap:wrap, dar ekranda alt satıra kayabilir) burada BİLİNÇLİ
+   olarak nowrap: kullanıcı "hiçbir buton alt satıra geçmeyecek" dedi. Çok dar ekranda satır
+   kırmak yerine yatay kaydırılıyor (overflow-x:auto) - içerik kaybolmuyor, sadece kaydırılıyor. */
+.filtre-toolbar {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: flex-end;
+  gap: 1.25rem;
+  margin-bottom: 1rem;
+  overflow-x: auto;
+  padding-bottom: 0.15rem;
+}
+
+.filtre-toolbar > .field {
+  flex: none;
+}
+
+/* Butonlar grubu margin-left:auto ile satırın en sağına itiliyor - girdi alanları ne kadar yer
+   kaplarsa kapsın, butonlar her zaman sağ kenarda kalıyor. */
+.filtre-toolbar-actions {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 0.5rem;
+  margin-left: auto;
+  flex: none;
+  padding-left: 1.25rem;
+}

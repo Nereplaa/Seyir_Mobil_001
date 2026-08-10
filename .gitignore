@@ -1,0 +1,33 @@
+# ============================================================
+# AI calisma dosyalari - GitHub'a GITMEZ, sadece yerelde kalir
+# ============================================================
+CLAUDE.md
+AI_NOTES/
+Archive/
+iş.txt
+feedbacks.txt
+.claude/
+
+# ============================================================
+# .NET (SeyirMobil.Api / SeyirMobil.Desktop icin, Adim 3+)
+# ============================================================
+bin/
+obj/
+*.user
+.vs/
+*.suo
+
+# ============================================================
+# Gizli bilgiler - sadece yerelde kalir, GitHub'a GITMEZ
+# ============================================================
+.env
+
+# ============================================================
+# Diger
+# ============================================================
+*.log
+
+# Kisisel test dosyalari (Excel import ozelligini elle test etmek icin kullanildi,
+# gercek proje ciktisi degil)
+import-test-tum-senaryolar.xlsx
+import_test2.xlsx

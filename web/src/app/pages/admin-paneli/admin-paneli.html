@@ -1,0 +1,87 @@
+<section class="panel panel-form">
+  <div class="panel-head"><span class="panel-eyebrow">Yeni Kullanıcı Ekle</span></div>
+  <div class="field-row">
+    <div class="field">
+      <label for="yeniKullaniciAdi">Kullanıcı Adı</label>
+      <dx-text-box
+        id="yeniKullaniciAdi"
+        [value]="yeniKullaniciAdi"
+        (onValueChanged)="yeniKullaniciAdi = $event.value ?? ''"
+        width="180"
+      ></dx-text-box>
+    </div>
+    <div class="field">
+      <label for="yeniSifre">Şifre</label>
+      <dx-text-box
+        id="yeniSifre"
+        mode="password"
+        [value]="yeniSifre"
+        (onValueChanged)="yeniSifre = $event.value ?? ''"
+        width="180"
+      ></dx-text-box>
+    </div>
+    <div class="field">
+      <label for="yeniRol">Rol</label>
+      <dx-select-box
+        id="yeniRol"
+        [dataSource]="rolSecenekleri"
+        [value]="yeniRol"
+        (onValueChanged)="yeniRol = $event.value ?? 'Viewer'"
+        width="140"
+      ></dx-select-box>
+    </div>
+    <div class="field">
+      <label>&nbsp;</label>
+      <dx-button
+        [text]="ekleniyor() ? 'Ekleniyor…' : 'Ekle'"
+        type="default"
+        [disabled]="ekleniyor()"
+        (onClick)="ekle()"
+      ></dx-button>
+    </div>
+  </div>
+</section>
+
+<section class="panel">
+  <div class="panel-head">
+    <span class="panel-eyebrow">Kullanıcılar</span>
+    <span class="panel-actions">
+      <dx-button
+        text="Sil"
+        type="danger"
+        [disabled]="!seciliKullanici() || kendisiSecilmiMi"
+        (onClick)="sil()"
+      ></dx-button>
+    </span>
+  </div>
+
+  <dx-data-grid
+    [dataSource]="kullanicilar()"
+    [columns]="dataGridColumns"
+    [showBorders]="true"
+    [showColumnLines]="true"
+    [showRowLines]="true"
+    [rowAlternationEnabled]="true"
+    [selection]="{ mode: 'single' }"
+    [searchPanel]="{ visible: true, placeholder: 'Ara...' }"
+    (onSelectionChanged)="onSelectionChanged($event)"
+  ></dx-data-grid>
+
+  <p class="status-text" style="margin-top: 0.75rem">{{ statusText() }}</p>
+  @if (kendisiSecilmiMi) {
+    <p class="status-text" style="margin-top: 0.25rem">Kendi hesabını silemezsin.</p>
+  }
+</section>
+
+<section class="panel">
+  <div class="panel-head"><span class="panel-eyebrow">Log Ekranı</span></div>
+  <p class="status-text">
+    Backend API çağrıları ve web arayüzündeki tüm etkileşimler (tıklamalar, filtre değişiklikleri)
+    Graylog'a kaydediliyor. Ayrıntılı log arama/filtreleme için Graylog'un kendi web arayüzü açılır
+    — Seyir Mobil içinde ayrı bir log ekranı yok, bilinçli bir tercih (tekrar geliştirmek yerine
+    hazır ve güçlü bir arayüz kullanılıyor).
+  </p>
+  <a href="http://localhost:9000" target="_blank" rel="noopener">
+    <dx-button text="Graylog'u Aç ↗" type="normal" stylingMode="outlined"></dx-button>
+  </a>
+</section>

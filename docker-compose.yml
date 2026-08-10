@@ -1,0 +1,116 @@
+# Seyir Mobil - tum sistem tek docker-compose altinda (Madde 5, Eren bey 2. geri bildirimi).
+# Gelistirme icin tasarlandi (kaynak kod volume olarak baglaniyor, canli yeniden yukleme
+# calisiyor) - `docker compose up` artik `dotnet run`/`ng serve`'in yerini aliyor.
+#
+# Servisler:
+#   sqlserver  - veritabani (eskiden yerel SQL Server Express, artik konteynerde)
+#   backend    - ASP.NET Core API (dotnet watch ile)
+#   web        - Angular (ng serve ile)
+#   mongodb    - Graylog'un kendi meta veri deposu (Graylog'un gerektirdigi bagimlilik)
+#   opensearch - Graylog'un arama/indeksleme altyapisi (Graylog'un gerektirdigi bagimlilik)
+#   graylog    - merkezi log toplama/goruntuleme arayuzu (Madde 5'in asil amaci)
+#
+# Ilk calistirma: `docker compose up -d` sonra veritabani semasini kurmak icin
+# `database/` altindaki 001-007 script'lerini sqlserver konteynerine uygula (bkz. AI_NOTES).
+#
+# GUVENLIK (2026-08-10): Bu dosya daha once sifreleri DUZ METIN icinde tutuyordu ve GitHub'a
+# push edilmisti - hepsi rotate edilip buradan cikarildi, artik ayni klasordeki (gitignore'lu)
+# ".env" dosyasindan okunuyor. Ilk kurulumda ".env.example"i ".env" olarak kopyalayip kendi
+# degerlerini yaz - "${DEGISKEN}" sozdizimi docker compose'un kendi ozelligi, ek arac gerekmiyor.
+
+services:
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    environment:
+      ACCEPT_EULA: "Y"
+      MSSQL_SA_PASSWORD: "${SQL_SA_PASSWORD}"
+      MSSQL_PID: "Express"
+    ports:
+      - "1433:1433"
+    volumes:
+      - sqlserver-data:/var/opt/mssql
+    healthcheck:
+      test: ["CMD-SHELL", "/opt/mssql-tools18/bin/sqlcmd -S localhost -U sa -P \"$$MSSQL_SA_PASSWORD\" -C -Q 'SELECT 1' || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build: ./backend/SeyirMobil.Api
+    depends_on:
+      sqlserver:
+        condition: service_healthy
+    environment:
+      # Windows Trusted_Connection (appsettings.json'daki yerel gelistirme degeri) konteyner
+      # icinde calismiyor - SQL auth'a (sa) gecen bu deger environment variable ile appsettings'i
+      # override ediyor (ASP.NET Core'un "ConnectionStrings__X" konvansiyonu).
+      ConnectionStrings__SeyirMobilDb: "Server=sqlserver;Database=SeyirMobilDb;User Id=sa;Password=${SQL_SA_PASSWORD};TrustServerCertificate=True;"
+      # appsettings.json'daki Jwt:SecretKey ARTIK gercek bir deger tasimiyor (bkz. o dosyadaki
+      # not) - gercek imzalama anahtari SADECE buradan, ayni ASP.NET Core "Jwt__X" konvansiyonuyla
+      # geliyor.
+      Jwt__SecretKey: "${JWT_SECRET_KEY}"
+      ASPNETCORE_ENVIRONMENT: "Development"
+    ports:
+      - "5080:5080"
+    volumes:
+      - ./backend/SeyirMobil.Api:/src
+      # bin/obj host'un (Windows) build ciktilarini konteynere (Linux) tasimasin diye ayri
+      # named volume'ler - aksi halde dotnet watch'in dosya izleyicisi Windows/Linux path
+      # farkliliklarindan dolayi coker (gercekten yasandi, "same key already added" hatasi).
+      - backend-bin:/src/bin
+      - backend-obj:/src/obj
+
+  web:
+    build: ./web
+    depends_on:
+      - backend
+    ports:
+      - "4200:4200"
+    volumes:
+      - ./web:/src
+      - web-node-modules:/src/node_modules
+
+  mongodb:
+    image: mongo:7
+    volumes:
+      - mongodb-data:/data/db
+
+  opensearch:
+    image: opensearchproject/opensearch:2
+    environment:
+      discovery.type: single-node
+      DISABLE_SECURITY_PLUGIN: "true"
+      OPENSEARCH_JAVA_OPTS: "-Xms512m -Xmx512m"
+    volumes:
+      - opensearch-data:/usr/share/opensearch/data
+
+  graylog:
+    image: graylog/graylog:6.1
+    depends_on:
+      - mongodb
+      - opensearch
+    environment:
+      GRAYLOG_MONGODB_URI: "mongodb://mongodb:27017/graylog"
+      GRAYLOG_ELASTICSEARCH_HOSTS: "http://opensearch:9200"
+      # Root sifresi artik burada duz metin/hash olarak YAZILI DEGIL - .env dosyasindan geliyor
+      # (bkz. .env.example). NOT: bu iki degisken sadece Graylog'un MongoDB'sinin ILK kurulumunda
+      # okunur - konteyner zaten kurulmus bir sistemde bunlari degistirmek gercek sifreyi
+      # OTOMATIK degistirmez, Graylog'un kendi arayuzunden (Settings -> Change password) elle
+      # degistirilmesi gerekir.
+      GRAYLOG_PASSWORD_SECRET: "${GRAYLOG_PASSWORD_SECRET}"
+      GRAYLOG_ROOT_PASSWORD_SHA2: "${GRAYLOG_ROOT_PASSWORD_SHA2}"
+      GRAYLOG_HTTP_EXTERNAL_URI: "http://localhost:9000/"
+    ports:
+      - "9000:9000"   # Web arayuzu
+      - "12201:12201/udp"  # GELF UDP girisi (backend/web loglarinin gonderilecegi port)
+    volumes:
+      - graylog-data:/usr/share/graylog/data
+
+volumes:
+  sqlserver-data:
+  mongodb-data:
+  opensearch-data:
+  graylog-data:
+  web-node-modules:
+  backend-bin:
+  backend-obj:

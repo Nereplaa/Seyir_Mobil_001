@@ -1,0 +1,94 @@
+<section class="panel">
+  <div class="panel-head"><span class="panel-eyebrow">Excel'den Toplu Veri Girişi</span></div>
+  <p class="status-text">
+    Sütunlar sırasıyla: <strong>AracPlaka, VeriTarihi, Hiz, KmSayaci</strong> (ilk satır başlık,
+    tam bu isimlerle). Plaka sistemde yoksa otomatik yeni araç olarak eklenir. Emin değilseniz
+    önce şablonu indirip onun üzerinden doldurun.
+  </p>
+
+  <div class="import-actions-row">
+    <input #dosyaSecici type="file" accept=".xlsx" hidden (change)="dosyaSecildi($event)" />
+    <dx-button
+      text="Excel Dosyası Seç"
+      type="normal"
+      stylingMode="outlined"
+      (onClick)="dosyaSecici.click()"
+    ></dx-button>
+    <dx-button text="Şablon İndir" type="normal" stylingMode="outlined" (onClick)="sablonIndir()"></dx-button>
+  </div>
+
+  @if (yukleniyor() && satirlar().length === 0 && !dosyaHatasi()) {
+    <p class="status-text">Dosya okunuyor ve doğrulanıyor…</p>
+  }
+
+  @if (dosyaHatasi()) {
+    <div class="dosya-hatasi-banner">
+      <strong>Bu dosya işlenemedi</strong>
+      <p>{{ dosyaHatasi() }}</p>
+    </div>
+  }
+</section>
+
+@if (satirlar().length > 0) {
+  <section class="panel">
+    <div class="panel-head">
+      <span class="panel-eyebrow">Önizleme ({{ toplamSatir() }} satır)</span>
+      <span class="panel-actions">
+        <dx-button
+          [text]="yukleniyor() ? 'Doğrulanıyor…' : 'Yeniden Doğrula'"
+          type="normal"
+          stylingMode="outlined"
+          [disabled]="yukleniyor() || onaylaniyor()"
+          (onClick)="yenidenDogrula()"
+        ></dx-button>
+        <dx-button
+          [text]="onaylaniyor() ? 'Aktarılıyor…' : 'İçe Aktar'"
+          type="default"
+          [disabled]="!hepsiGecerliMi() || yukleniyor() || onaylaniyor()"
+          (onClick)="iceAktar()"
+        ></dx-button>
+      </span>
+    </div>
+
+    @if (cakismaSatiriVarMi()) {
+      <div class="field-row" style="align-items: center; margin-bottom: 0.75rem; gap: 0.5rem">
+        <span class="status-text">Çakışan satırlar için toplu aksiyon:</span>
+        <dx-button
+          text="Tümünü Üzerine Yaz"
+          type="normal"
+          stylingMode="outlined"
+          (onClick)="tumCakismalariAyarla('UzerineYaz')"
+        ></dx-button>
+        <dx-button
+          text="Tümünü Atla"
+          type="normal"
+          stylingMode="outlined"
+          (onClick)="tumCakismalariAyarla('Atla')"
+        ></dx-button>
+      </div>
+    }
+
+    <dx-data-grid
+      [dataSource]="satirlar()"
+      [columns]="columns"
+      [showBorders]="true"
+      [showColumnLines]="true"
+      [showRowLines]="true"
+      [wordWrapEnabled]="true"
+      [columnAutoWidth]="true"
+      [editing]="{ mode: 'cell', allowUpdating: true }"
+      dateSerializationFormat="yyyy-MM-dd"
+      (onSaved)="gridKaydedildi()"
+      (onRowPrepared)="onRowPrepared($event)"
+      (onEditorPreparing)="onEditorPreparing($event)"
+      (onCellValueChanged)="onCellValueChanged()"
+    ></dx-data-grid>
+
+    @if (!hepsiGecerliMi()) {
+      <p class="error-text" style="margin-top: 0.5rem">
+        İçe aktarmadan önce tüm satırların hatasız olması ve çakışan satırlar için bir aksiyon
+        (Üzerine Yaz / Atla) seçilmiş olması gerekiyor.
+      </p>
+    }
+  </section>
+}

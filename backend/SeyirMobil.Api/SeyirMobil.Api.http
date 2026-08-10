@@ -1,0 +1,6 @@
+@SeyirMobil.Api_HostAddress = http://localhost:5228
+
+GET {{SeyirMobil.Api_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

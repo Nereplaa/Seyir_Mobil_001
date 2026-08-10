@@ -1,0 +1,95 @@
+<section class="panel panel-form">
+  <div class="panel-head"><span class="panel-eyebrow">Araç Hareket Raporu</span></div>
+
+  <div class="field-row">
+    <div class="field">
+      <label for="tarihAraligi">Tarih Aralığı</label>
+      <dx-date-range-box
+        id="tarihAraligi"
+        [startDate]="baslangicDate"
+        (startDateChange)="baslangicDateDegisti($event)"
+        [endDate]="bitisDate"
+        (endDateChange)="bitisDateDegisti($event)"
+        startDatePlaceholder="Başlangıç"
+        endDatePlaceholder="Bitiş"
+        labelMode="hidden"
+        displayFormat="dd.MM.yyyy"
+        [showClearButton]="false"
+        width="260"
+      ></dx-date-range-box>
+    </div>
+
+    <div class="field">
+      <label for="plakaSecim">Araçlar (birden fazla seçebilirsiniz)</label>
+      <dx-tag-box
+        id="plakaSecim"
+        [dataSource]="plakalar()"
+        displayExpr="aracPlaka"
+        valueExpr="aracPlaka"
+        placeholder="Plaka ara..."
+        [searchEnabled]="true"
+        [showSelectionControls]="true"
+        [multiline]="false"
+        [value]="seciliPlakalar()"
+        (onValueChanged)="seciliPlakalarDegisti($event)"
+        width="260"
+      ></dx-tag-box>
+    </div>
+
+    <div class="field">
+      <label>&nbsp;</label>
+      <label class="toggle-detayli">
+        <dx-check-box [value]="detayliRapor" (onValueChanged)="detayliRapor = !!$event.value"></dx-check-box>
+        <span>Detaylı Rapor (gün gün)</span>
+      </label>
+    </div>
+
+    <div class="field">
+      <label>&nbsp;</label>
+      <dx-button
+        [text]="yukleniyor() ? 'Oluşturuluyor…' : 'Rapor Oluştur'"
+        type="default"
+        [disabled]="!raporOlusturEtkin() || yukleniyor()"
+        (onClick)="raporOlustur()"
+      ></dx-button>
+    </div>
+  </div>
+
+  <p class="status-text" style="margin-top: 0.75rem">{{ statusText() }}</p>
+</section>
+
+@if (raporUretildi() && !detayliRapor) {
+  <section class="panel">
+    <div class="panel-head"><span class="panel-eyebrow">Sonuç — Özet</span></div>
+    <dx-data-grid
+      [dataSource]="ozetSonuclar()"
+      [columns]="ozetColumns"
+      [showBorders]="true"
+      [showColumnLines]="true"
+      [showRowLines]="true"
+      [rowAlternationEnabled]="true"
+      [searchPanel]="{ visible: true, placeholder: 'Ara...' }"
+      [export]="{ enabled: true }"
+      (onExporting)="onExportingOzet($event)"
+    ></dx-data-grid>
+  </section>
+}
+
+@if (raporUretildi() && detayliRapor) {
+  <section class="panel">
+    <div class="panel-head"><span class="panel-eyebrow">Sonuç — Detaylı</span></div>
+    <dx-data-grid
+      [dataSource]="detaySonuclar()"
+      [columns]="detayColumns"
+      [showBorders]="true"
+      [showColumnLines]="true"
+      [showRowLines]="true"
+      [rowAlternationEnabled]="true"
+      [paging]="{ pageSize: 25 }"
+      [pager]="{ visible: true, showPageSizeSelector: true, allowedPageSizes: [10, 25, 50, 100], showInfo: true }"
+      [searchPanel]="{ visible: true, placeholder: 'Ara...' }"
+      [export]="{ enabled: true }"
+      (onExporting)="onExportingDetay($event)"
+    ></dx-data-grid>
+  </section>
+}

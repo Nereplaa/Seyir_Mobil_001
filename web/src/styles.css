@@ -1,0 +1,364 @@
+:root {
+  /* ---------- Seyir Mobil tasarım sistemi — "seyir defteri / rota" temalı token seti ---------- */
+  --ink-950: #0a1420; /* en koyu lacivert — tam-sayfa koyu paneller (login sol panel) */
+  --ink-900: #0e1a2b; /* birincil metin */
+  --ink-700: #223350; /* ikincil metin */
+  --ink-500: #3f5068; /* soluk metin - 2026-08-07: bir ton koyultuldu, çok soluk/donuk duruyordu */
+  --slate-300: #a7b4c9; /* hover/vurgu kenarlık - 2026-08-07: bir ton koyultuldu */
+  --slate-200: #d7dee8; /* varsayılan kenarlık */
+  --slate-150: #e6ebf1; /* slate-200'den biraz daha açık — panel başlığı altı çizgi, tablo/grid
+    çizgileri; 2026-08-07 tasarım turunda amaç sertliği azaltmak (bkz. AI_NOTES/decisions.md) */
+  --slate-100: #e9edf3; /* zebra satır, hafif dolgu */
+  --paper-50: #f5f8fa; /* sayfa arka planı */
+  --paper-0: #ffffff; /* kart/yüzey arka planı */
+  --route-700: #0f4f6c; /* vurgu, hover/aktif durum */
+  --route-600: #146c94; /* BİRİNCİL vurgu — buton, link, aktif menü, focus halkası */
+  --route-500: #1c85b3; /* vurgu, daha açık */
+  --route-100: #dceef5; /* vurgu tonu — aktif menü altı, hafif dolgu */
+  --waypoint-500: #d98c2b; /* ikincil vurgu — ör. "ekle/yeni" aksiyonları */
+  --waypoint-100: #f8e7cd;
+  --ok-600: #1e8e6e; /* başarı */
+  --ok-100: #d9f0e8;
+  --warn-600: #c98a1f; /* uyarı */
+  --warn-100: #f6ead0;
+  --danger-600: #c0463a; /* hata/tehlike */
+  --danger-100: #f7ded9;
+  --font-mono: 'Cascadia Code', 'SF Mono', ui-monospace, Consolas, 'Courier New', monospace;
+  --shadow: 0 1px 2px rgba(14, 26, 43, 0.08), 0 4px 16px rgba(14, 26, 43, 0.08); /* kart/yüzey yükseltisi (elevation) */
+
+  /* DevExtreme Fluent SaaS temasının kendi CSS custom property'leri üzerinden yeniden
+     renklendirilmesi - bkz. node_modules/devextreme/dist/css/dx.fluent.saas.light.css :root
+     bloğu. Bu, elle !important override yazmak yerine DevExtreme'in kendi desteklediği
+     tema mekanizması (styles.css, angular.json'da dx CSS'inden SONRA yükleniyor, bu yüzden
+     aynı custom property'leri burada tanımlamak kaynak sırasıyla kazanıyor). */
+  --dx-color-primary: var(--route-600);
+  --dx-color-text: var(--ink-900);
+  --dx-color-border: var(--slate-200);
+  --dx-color-main-bg: var(--paper-0);
+  --dx-color-danger: var(--danger-600);
+  --dx-color-success: var(--ok-600);
+  --dx-color-warning: var(--warn-600);
+  --dx-color-link: var(--route-600);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--ink-900);
+  /* background-color (uzun form) - bkz. AI_NOTES/decisions.md 2026-08-07 15:xx girişi: Angular'ın
+     build zinciri (lightningcss) "background: var(--x)" kısayolunu bazen background-color'ı BOŞ
+     bırakarak açıyor (canlı DOM'da doğrulandı, container restart'ı düzeltmedi) - tüm düz renk
+     dolgularında kısayol yerine uzun form kullanılıyor, bu köşe durumunu tamamen atlıyor. */
+  background-color: var(--paper-50);
+}
+
+h1, h2, h3 {
+  color: var(--ink-900);
+}
+
+label {
+  display: block;
+  /* Etiketler mono + hafif tracking'li - sistemde zaten sayılar/plakalar icin kullanilan mono
+     fontu alan etiketlerine tasiyarak var olan kimligi guclendiriyoruz (2026-08-07 tasarim turu,
+     bkz. AI_NOTES/decisions.md). Butonlar/menu/basliklarda MONO KULLANILMIYOR - sadece burada. */
+  font-family: var(--font-mono);
+  font-size: 0.72rem;
+  font-weight: 500;
+  letter-spacing: 0.035em;
+  text-transform: uppercase;
+  color: var(--ink-700);
+  margin-bottom: 0.35rem;
+}
+
+/* ---------- Panel — "kart" (yuvarlak köşe + gölge + sol şerit) YERİNE, 2026-08-07 tasarım
+   turunda geldi. Kutu/çerçeve/gölge YOK, düz sayfa zemini üzerinde duruyor; tek ayraç mono
+   başlığın altındaki ince çizgi. Kullanım: <section class="panel"><div class="panel-head">
+   <span class="panel-eyebrow">Başlık</span>[varsa <span class="panel-actions">…]</div>…
+   </section> — bkz. liste/rapor/admin-paneli/import .html dosyaları. ---------- */
+.panel + .panel {
+  margin-top: 2rem;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-bottom: 0.7rem;
+  margin-bottom: 1.3rem;
+  border-bottom: 1px solid var(--slate-150);
+}
+
+.panel-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--ink-700);
+}
+
+.panel-actions {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* Bir panel başlığının hemen altında dx-data-grid varsa (Araç Hareketleri, Kullanıcılar vb.)
+   grid'in KENDİ iç araç çubuğu (arama kutusu, bkz. .dx-datagrid-header-panel) zaten kendi
+   dolgusunu getiriyor - panel-head'in normal 1.3rem alt boşluğuyla üst üste binince başlık ile
+   grid arasında gereksiz büyük bir boşluk oluşuyordu ("başlık gridden çok uzak" geri bildirimi,
+   2026-08-07). SADECE bu durumda alt boşluk daraltılıyor, form panellerindeki (Yeni Kayıt Ekle,
+   Filtre) geniş boşluk değişmiyor. */
+.panel-head:has(+ dx-data-grid) {
+  margin-bottom: 0.4rem;
+}
+
+/* Form ağırlıklı paneller (birkaç küçük alan + buton) geniş ekranlarda tam genişliğe
+   yayılınca sağda büyük, kullanılmayan bir boşluk bırakıyordu ("boş tuval" geri bildirimi,
+   2026-08-07) - bu sınıf SADECE form panellerine uygulanıyor (Yeni Kayıt Ekle, Filtre, Yeni
+   Kullanıcı Ekle), veri grid'i barındıran panellere DEĞİL - grid'ler tam genişlik kalmaya
+   devam ediyor (bkz. AI_NOTES/decisions.md). SADECE .field-row'a uygulanıyor, .panel-head'e DEĞİL
+   (2026-08-07 düzeltme): eskiden section'ın tamamını sınırlıyordu, bu da panel-head'deki
+   panel-actions'ın (Filtrele/Temizle) tam genişlik panellerdeki (Araç Hareketleri'nin Yenile/Sil/
+   Excel'i gibi) panel-actions'la AYNI sağ kenara hizalanmasını engelliyordu - artık başlık satırı
+   HER panelde aynı (tam) genişlikte, sadece alan girişleri kompakt kalıyor. */
+.panel-form .field-row {
+  max-width: 960px;
+}
+
+.field-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+}
+
+.status-text {
+  color: var(--ink-500);
+  font-size: 0.85rem;
+}
+
+.error-text {
+  color: var(--danger-600);
+  font-size: 0.85rem;
+}
+
+/* ---------- Sayısal / tarih grid kolonları — telemetri okuma görünümü ---------- */
+.col-numeric,
+.col-numeric .dx-texteditor-input {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ---------- Plaka "çip" görünümü (grid hücrelerinde, cellTemplate ile uygulanıyor) ---------- */
+.plaka-chip {
+  display: inline-block;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.02em;
+  background-color: var(--slate-100);
+  color: var(--ink-700);
+  border: 1px solid var(--slate-200);
+  border-radius: 999px;
+  padding: 0.15rem 0.6rem;
+  font-size: 0.85rem;
+  line-height: 1.4;
+}
+
+/* ---------- Durum çipleri (Import önizleme grid'i) ---------- */
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  white-space: nowrap;
+  line-height: 1.4;
+}
+
+.chip::before {
+  content: '';
+  width: 6px;
+  height: 6px;
+  flex: none;
+  border-radius: 50%;
+  background-color: currentColor;
+}
+
+.chip-ok {
+  background-color: var(--ok-100);
+  color: var(--ok-600);
+}
+
+.chip-warn {
+  background-color: var(--warn-100);
+  color: var(--warn-600);
+}
+
+.chip-danger {
+  background-color: var(--danger-100);
+  color: var(--danger-600);
+}
+
+/* Import önizleme grid'inde satır durumuna göre sol kenarlık vurgusu - eskiden inline JS ile
+   (onRowPrepared -> style.backgroundColor) yapılıyordu, artık class tabanlı. */
+.dx-datagrid .row-ok {
+  box-shadow: inset 3px 0 0 var(--ok-600);
+}
+
+.dx-datagrid .row-warn {
+  box-shadow: inset 3px 0 0 var(--warn-600);
+}
+
+.dx-datagrid .row-danger {
+  box-shadow: inset 3px 0 0 var(--danger-600);
+}
+
+/* ---------- Grid çizgi görünürlüğü ---------- */
+/* Fluent SaaS temasının varsayılan satır/kolon çizgi rengi (#e5e8f0) beyaz zemine karşı neredeyse
+   görünmez - kullanıcı geri bildirimi: "hangi hücrenin nerede bittiği belli olmuyor". Her
+   dx-data-grid'e [showColumnLines]/[showRowLines] eklendi (bkz. ilgili .html dosyaları), burada
+   da DevExtreme'in kendi çizgi kurallarını (.dx-row-lines/.dx-column-lines, dist CSS'te literal
+   hex olarak gömülü, --dx-color-border değişkenine bağlı DEĞİL) override ediyoruz - kaynak sırası
+   (bkz. angular.json, bu dosya dx CSS'inden SONRA yükleniyor) eşit özgüllükte kazanmaya yetiyor,
+   !important gerekmedi.
+   2026-08-07 tasarım turu: --slate-300 yerine daha soluk --slate-150 kullanılıyor (yumuşatma turu
+   kararı - çizgiler hâlâ görünür ama artık --slate-300 kadar "sert" değil). */
+.dx-datagrid .dx-row-lines > td {
+  border-top-color: var(--slate-150);
+  border-bottom-color: var(--slate-150);
+}
+
+.dx-datagrid .dx-column-lines > td {
+  border-left-color: var(--slate-150);
+  border-right-color: var(--slate-150);
+}
+
+/* ---------- Grid başlık tipografisi + hücre dolgusu (2026-08-07 tasarım turu) ---------- */
+/* Sütun başlıklarını mono/uppercase/hafif tracking'e çeviriyor - .mock-table th ile birebir aynı
+   dil (bkz. ekran kataloğu mockup'ı). Seçici (.dx-datagrid-headers .dx-datagrid-table .dx-row>td,
+   3 sınıf) dist CSS'teki eşdeğerinden (aynı seçici, 3 sınıf) DAHA SONRA yüklendiği için kaynak
+   sırasıyla kazanıyor - !important gerekmedi. */
+.dx-datagrid-headers .dx-datagrid-table .dx-row > td {
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-700);
+  border-bottom-color: var(--slate-150);
+}
+
+/* Hücre dolgusu biraz artırıldı ("nefes payı" geri bildirimi) - dist CSS'teki `.dx-row>td`
+   (1 sınıf, padding: 14px 16px) yerine daha özgül `.dx-datagrid .dx-row>td` (2 sınıf) kazanıyor. */
+.dx-datagrid .dx-row > td {
+  padding: 16px 18px;
+}
+
+/* ---------- Form kontrolleri (text/number/date/select/tag box, date-range-box) — 2026-08-07
+   tasarım turu ---------- */
+/* Bir önceki mockup turunda "alt-çizgi-only" (dx-editor-underlined benzeri) sert bir stil
+   denenmişti, kullanıcı "çok keskin" dedi - bu tur YUMUŞATILDI: tam kenarlıklı, yuvarlak köşeli,
+   odakta yumuşak halka. Tüm dx-*-box bileşenleri ortak `.dx-texteditor.dx-editor-outlined`
+   iskeletini paylaşıyor, tek bir override tüm form kontrollerini kapsıyor. Seçici DevExtreme'in
+   kendi `.dx-editor-outlined` (1 sınıf) tanımından daha özgül (2 sınıf) olduğu için kazanıyor. */
+.dx-texteditor.dx-editor-outlined {
+  border-radius: 8px;
+  border-color: var(--slate-200);
+  background-color: var(--paper-0);
+}
+
+.dx-texteditor.dx-editor-outlined.dx-state-hover {
+  border-color: var(--slate-300);
+}
+
+/* Odak halkası - dist CSS'in dx-state-focused kuralı (2 sınıf: .dx-editor-outlined.dx-state-focused)
+   sadece border-*-color set ediyor, box-shadow eklemiyor; bizim seçicimiz (3 sınıf) hem kenarlığı
+   hem halkayı tek yerde veriyor. */
+.dx-texteditor.dx-editor-outlined.dx-state-focused {
+  border-color: var(--route-600);
+  box-shadow: 0 0 0 3px rgba(20, 108, 148, 0.14);
+}
+
+/* Checkbox - varsayılan işaretli rengi DevExtreme'in stok mavisi (#5486ff benzeri, --dx-color-*
+   custom property'lerinin AKSİNE bu hex'ler dist CSS'te hiçbir yerde var() ile tüketilmiyor,
+   yani --dx-color-primary tanımı fiilen etkisiz - doğrudan sınıf override'ı gerekiyor). */
+.dx-checkbox-checked .dx-checkbox-icon {
+  background-color: var(--route-600);
+  border-color: var(--route-600);
+}
+
+/* ---------- Butonlar (dx-button) — 2026-08-07 tasarım turu ---------- */
+/* AYNI sebeple (--dx-color-primary/--dx-color-danger fiilen tüketilmiyor) birincil/danger
+   butonlar hâlâ DevExtreme'in stok mavi/kırmızısını (#5486ff / #dc2828) gösteriyordu - doğrudan
+   override. Metin MONO/BÜYÜK HARF DEĞİL (dist CSS zaten text-transform:none veriyor, dokunulmadı) -
+   sadece mono/uppercase kalan yerler marka adı + alan etiketleri + tablo başlıkları, bkz. ilgili
+   yorumlar. */
+.dx-button {
+  border-radius: 8px;
+}
+
+/* Mockup'ta (onaylanmış referans) buton metniyle kenar arasında belirgin bir boşluk vardı,
+   gerçek uygulamada butonlar sıkışık/dar duruyordu (2026-08-07 geri bildirimi). Kök neden:
+   DevExtreme'in dist CSS'inde boyut/moda göre onlarca farklı `.dx-button-content` padding kuralı
+   var (6px'ten 2px'e kadar), hangisinin kazanacağı bizim kullanım şeklimizde (ikonsuz, normal
+   boyut) öngörülebilir değildi - bu yüzden TEK, garanti kazanan bir değerle override edildi.
+   !important burada BİLİNÇLİ (projenin genel kuralı değil, sadece DevExtreme'in kendi iç
+   cascade'iyle rekabet etmemek için istisna). */
+.dx-button .dx-button-content {
+  padding: 0.55rem 1rem !important;
+}
+
+.dx-button .dx-button-content .dx-button-text {
+  font-weight: 600;
+}
+
+.dx-button-mode-contained.dx-button-default {
+  background-color: var(--route-600);
+  color: #fff;
+  box-shadow: 0 1px 2px rgba(10, 20, 32, 0.14);
+}
+
+.dx-button-mode-contained.dx-button-default.dx-state-hover,
+.dx-button-mode-contained.dx-button-default.dx-state-focused,
+.dx-button-mode-contained.dx-button-default.dx-state-active {
+  background-color: var(--route-700);
+}
+
+.dx-button-mode-outlined.dx-button-normal {
+  background-color: var(--paper-0);
+  border-color: var(--slate-200);
+  color: var(--ink-700);
+}
+
+/* Danger buton - sert kırmızı dolgu YERİNE, chip renkleriyle tutarlı yumuşak "tinted" görünüm
+   (dolgu --danger-100, yazı --danger-600) - kullanıcı geri bildirimi: sert kenarlık/dolgu çok
+   "alarm" hissi veriyordu. */
+.dx-button-mode-contained.dx-button-danger,
+.dx-button-mode-outlined.dx-button-danger {
+  background-color: var(--danger-100);
+  border-color: transparent;
+  color: var(--danger-600);
+  box-shadow: none;
+}
+
+.dx-button-mode-contained.dx-button-danger.dx-state-hover,
+.dx-button-mode-outlined.dx-button-danger.dx-state-hover {
+  background-color: var(--danger-100);
+  border-color: transparent;
+  color: var(--danger-600);
+  opacity: 0.82;
+}
