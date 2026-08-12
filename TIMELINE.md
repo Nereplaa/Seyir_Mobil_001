@@ -483,6 +483,68 @@ görsel hem işlevsel olarak beklendiği gibi çalışıyor.
 
 ---
 
+## 2026-08-11 15:19 — Yeni Geri Bildirim Turu: Şifre Sıfırlama, Çoklu Dil, Tasarım İnce Ayarı
+
+Kurumdan (Eren bey), bir önceki gün paylaşılan Graylog panosu ve tasarımın son haline dört
+maddelik yeni bir geri bildirim geldi. Genel değerlendirme olumlu ("Graylog tarafı oldukça iyi
+olmuş") — aksiyon gerektiren dört madde ve uygulama sırası netleşti:
+
+1. **Login ekranına "Şifremi Unuttum" akışı** eklenecek.
+2. **E-posta ile şifre sıfırlama** — kullanıcı, kayıtlı e-posta adresine gelen bir bağlantıyla
+   yeni şifre belirleyebilecek. Geliştirme aşamasında gerçek kullanıcılara mail gitmeyen, test
+   amaçlı ücretsiz bir e-posta servisi kullanılacak; ileride gerçek bir mail sunucusuna geçiş
+   kolay olacak şekilde kurulacak.
+3. **Çoklu dil desteği** — kademeli bir süreç olarak, önce altyapısı kurulacak, ilk hedef dil
+   İngilizce olacak.
+4. **Arayüzün "yapay zeka ile üretilmiş" hissini kırma çalışması devam edecek** — özellikle yazı
+   tipi (font) seçimi üzerinde durulacak, birkaç seçenek değerlendirilip birlikte karar
+   verilecek.
+
+Sıradaki adım: 1. ve 2. maddeyle (şifre sıfırlama akışı) başlanması.
+
+---
+
+## 2026-08-11 15:36 — Şifre Sıfırlama Özelliğinin İlk Adımı: Kullanıcı Kayıtlarına E-posta Eklendi
+
+Şifre sıfırlama özelliğinin çalışabilmesi için önce kullanıcı kayıtlarının bir e-posta adresi
+taşıması gerekiyordu — bu adım tamamlandı. Veritabanındaki kullanıcı tablosuna yeni bir e-posta
+alanı eklendi (mevcut kullanıcılar etkilenmedi), Yönetici Paneli'ndeki "Yeni Kullanıcı Ekle"
+formuna e-posta girişi eklendi ve artık yeni bir kullanıcı oluşturulurken e-posta adresi zorunlu.
+Değişiklik gerçek veritabanı üzerinde uygulanıp test edildi.
+
+---
+
+## 2026-08-11 16:19 — "Şifremi Unuttum" Özelliği Tamamlandı
+
+Giriş ekranına "Şifremi Unuttum" bağlantısı eklendi. Artık bir kullanıcı şifresini unutursa,
+kayıtlı e-posta adresini girerek bir sıfırlama bağlantısı isteyebiliyor; bu bağlantıyla açılan
+sayfada yeni bir şifre belirleyip tekrar giriş yapabiliyor. Sıfırlama bağlantısı güvenlik için
+1 saat geçerli ve yalnızca bir kez kullanılabiliyor. Sistem, bir e-posta adresinin kayıtlı olup
+olmadığını belli etmeyecek şekilde tasarlandı — bu da hesap bilgisi sızdırmayı önleyen bilinen
+bir güvenlik pratiği.
+
+Mail gönderimi için altyapı hazır (test amaçlı, gerçek kullanıcılara mail göndermeyen bir servis
+üzerinden çalışacak şekilde kuruldu) — gerçek bir e-posta hesabı bağlanana kadar sistem sıfırlama
+bağlantısını üretmeye devam ediyor, sadece mail gönderimi devre dışı kalıyor, başka hiçbir şeyi
+etkilemiyor.
+
+Bu çalışma sırasında, Yönetici Paneli'nde daha önce giriş yapmış bir kullanıcıyı silmenin hataya
+yol açtığı fark edildi ve aynı gün içinde düzeltildi — artık bir kullanıcı silindiğinde aktif
+oturumu da birlikte sonlandırılıyor.
+
+---
+
+## 2026-08-11 16:33 — Çoklu Dil Desteğinin Altyapısı Kuruldu
+
+Uygulamanın birden fazla dilde kullanılabilmesi için gerekli altyapı hazırlandı ve üst menüde
+bir dil seçici (TR/EN) eklendi. Kademeli bir yaklaşım benimsendi — kurumun "yavaş yavaş dil
+ekleyelim" isteğine uygun olarak, bu turda sadece üst menüdeki ekran başlıkları gerçekten
+İngilizce'ye çevrildi; sistemin geri kalanı önümüzdeki günlerde aynı yöntemle adım adım
+çevrilecek. Seçilen dil tercihi tarayıcıda hatırlanıyor, bir sonraki ziyarette otomatik olarak
+uygulanıyor.
+
+---
+
 ## 🔜 Sıradaki Adımlar
 
 - [x] Web istemcisinin eklenmesi (aynı backend API üzerinden)
@@ -498,4 +560,8 @@ görsel hem işlevsel olarak beklendiği gibi çalışıyor.
 - [x] Docker ile konteynerleştirme + kullanıcı hareket günlüğü (Graylog)
 - [x] Excel'den toplu veri içe aktarma (web + masaüstü)
 - [x] Web arayüzünün tasarım dilinin yenilenmesi (kurum geri bildirimi üzerine)
+- [x] Graylog üzerinde sistem izleme panosu (dashboard) kurulması
 - [ ] Üst menü/sekme yapısının DevExtreme'e taşınması (isteğe bağlı, henüz yapılmadı)
+- [x] "Şifremi Unuttum" akışı + e-posta ile şifre sıfırlama (gerçek mail testi için SMTP hesabı bekleniyor)
+- [~] Çoklu dil desteği — altyapı + üst menü çevrildi, geri kalan ekranlar kademeli sürecek
+- [ ] Arayüz tasarımında "yapay zeka hissi"ni kırma çalışması (özellikle font seçimi)
