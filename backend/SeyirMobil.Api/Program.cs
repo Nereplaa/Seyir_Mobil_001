@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.Security.Cryptography;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -89,6 +90,9 @@ builder.Services.AddAuthorization();
 // Scoped (Singleton degil): SessionStore artik Sessions tablosuna yazmak icin
 // SeyirMobilDbContext'e ihtiyac duyuyor, DbContext'in kendisi de scoped (istek basina).
 builder.Services.AddScoped<SessionStore>();
+// MailService kendi basina durum tutmuyor (her cagrida yeni SmtpClient acip kapatiyor) -
+// Scoped/Singleton farketmez, ama diger servislerle tutarlilik icin Scoped secildi.
+builder.Services.AddScoped<MailService>();
 
 var app = builder.Build();
 
@@ -669,12 +673,60 @@ app.MapPost("/api/auth/logout", async (ClaimsPrincipal principal, SessionStore s
 .RequireAuthorization()
 .WithName("Logout");
 
+// ---------- Sifremi Unuttum / Sifre Sifirlama (feedback_001, Eren bey 2026-08-11) ----------
+// Auth ZORUNLU DEGIL - kullanici tanim geregi giris YAPAMADIGI icin bu akisi kullaniyor.
+
+app.MapPost("/api/auth/sifremi-unuttum", async (ForgotPasswordRequest request, SeyirMobilDbContext db, IConfiguration config, MailService mailService) =>
+{
+    var user = await db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
+    if (user is not null)
+    {
+        // 32 byte'lik kriptografik olarak guvenli rastgele token - tahmin edilemez.
+        var token = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
+        user.ResetToken = token;
+        user.ResetTokenExpiry = DateTime.UtcNow.AddHours(1);
+        await db.SaveChangesAsync();
+
+        var frontendBaseUrl = config["Frontend:BaseUrl"] ?? "http://localhost:4200";
+        var sifirlamaLinki = $"{frontendBaseUrl}/sifre-sifirla?token={token}";
+        await mailService.GonderAsync(
+            user.Email!,
+            "Seyir Mobil - Şifre Sıfırlama",
+            $"Merhaba {user.Username},\n\nŞifrenizi sıfırlamak için aşağıdaki bağlantıya tıklayın:\n{sifirlamaLinki}\n\nBu bağlantı 1 saat geçerlidir. Bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.");
+    }
+    // Kullanici bulunsun/bulunmasin TAMAMEN AYNI mesaj donuyor - "bu email sistemde kayitli
+    // mi?" sorusuna cevap sizdirmamak icin (email enumeration'a karsi bilincli onlem).
+    return Results.Ok(new { message = "Eğer bu e-posta adresi sistemde kayıtlıysa, şifre sıfırlama bağlantısı gönderildi." });
+})
+.WithName("ForgotPassword");
+
+app.MapPost("/api/auth/sifre-sifirla", async (ResetPasswordRequest request, SeyirMobilDbContext db) =>
+{
+    if (request.NewPassword.Length < 6)
+    {
+        return Results.BadRequest(new { message = "Şifre en az 6 karakter olmalı." });
+    }
+
+    var user = await db.Users.FirstOrDefaultAsync(u => u.ResetToken == request.Token);
+    if (user is null || user.ResetTokenExpiry is null || user.ResetTokenExpiry < DateTime.UtcNow)
+    {
+        return Results.BadRequest(new { message = "Sıfırlama bağlantısı geçersiz veya süresi dolmuş. Yeniden \"Şifremi Unuttum\" isteğinde bulunun." });
+    }
+
+    user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
+    user.ResetToken = null;
+    user.ResetTokenExpiry = null;
+    await db.SaveChangesAsync();
+    return Results.Ok(new { message = "Şifreniz güncellendi, şimdi giriş yapabilirsiniz." });
+})
+.WithName("ResetPassword");
+
 // ---------- Kullanici yonetimi (Admin rolu zorunlu - self servis kayit YOK, kasitli) ----------
 
 app.MapGet("/api/users", async (SeyirMobilDbContext db) =>
     await db.Users
         .OrderBy(u => u.Username)
-        .Select(u => new UserSummary(u.Id, u.Username, u.Role, u.OlusturmaTarihi))
+        .Select(u => new UserSummary(u.Id, u.Username, u.Role, u.Email, u.OlusturmaTarihi))
         .ToListAsync())
 .RequireAuthorization(policy => policy.RequireRole("Admin"))
 .WithName("GetUsers");
@@ -693,22 +745,35 @@ app.MapPost("/api/users", async (CreateUserRequest request, SeyirMobilDbContext 
     {
         return Results.BadRequest(new { message = "Rol 'Admin' veya 'Viewer' olmalı." });
     }
+    // E-posta ZORUNLU (mevcut/goc-oncesi kullanicilarda opsiyonel olsa da, yeni
+    // kullanicilar icin zorunlu - "Sifremi Unuttum" akisinin on kosulu, bkz.
+    // database/008_add_email_to_users_table.sql yorumu).
+    if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains('@'))
+    {
+        return Results.BadRequest(new { message = "Geçerli bir e-posta adresi girilmeli." });
+    }
 
     var kullaniciAdiVarMi = await db.Users.AnyAsync(u => u.Username == request.Username);
     if (kullaniciAdiVarMi)
     {
         return Results.BadRequest(new { message = "Bu kullanıcı adı zaten kayıtlı." });
     }
+    var emailVarMi = await db.Users.AnyAsync(u => u.Email == request.Email);
+    if (emailVarMi)
+    {
+        return Results.BadRequest(new { message = "Bu e-posta adresi zaten kayıtlı." });
+    }
 
     var user = new User
     {
         Username = request.Username,
         PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.Password),
-        Role = request.Role
+        Role = request.Role,
+        Email = request.Email
     };
     db.Users.Add(user);
     await db.SaveChangesAsync();
-    return Results.Created($"/api/users/{user.Id}", new UserSummary(user.Id, user.Username, user.Role, user.OlusturmaTarihi));
+    return Results.Created($"/api/users/{user.Id}", new UserSummary(user.Id, user.Username, user.Role, user.Email, user.OlusturmaTarihi));
 })
 .RequireAuthorization(policy => policy.RequireRole("Admin"))
 .WithName("CreateUser");
@@ -720,6 +785,14 @@ app.MapDelete("/api/users/{id:int}", async (int id, SeyirMobilDbContext db) =>
     {
         return Results.NotFound();
     }
+    // Kullanicinin aktif oturumlari ONCE silinmeli - aksi halde FK kisiti (Sessions.UserId ->
+    // Users.Id) yuzunden silme islemi 500 ile cokuyordu (2026-08-11'de bulunan gercek bug,
+    // sifre sifirlama akisini test ederken ortaya cikti). Ayrica bu zaten DOGRU davranis:
+    // hesabi silinen bir kullanicinin oturumu da GECERSIZ olmali, sadece FK hatasini
+    // gidermek icin degil - silinen bir kullanici token'i hala gecerliyken sisteme
+    // erisebiliyor olmamali.
+    var oturumlar = await db.Sessions.Where(s => s.UserId == id).ToListAsync();
+    db.Sessions.RemoveRange(oturumlar);
     db.Users.Remove(user);
     await db.SaveChangesAsync();
     return Results.NoContent();
