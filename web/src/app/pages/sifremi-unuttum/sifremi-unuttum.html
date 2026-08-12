@@ -6,7 +6,7 @@
         <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4" />
         <path d="M15.5 8.5 L11 11 L8.5 15.5 L13 13 Z" fill="currentColor" />
       </svg>
-      Seyir Mobil
+      {{ 'authOrtak.marka' | translate }}
     </div>
 
     <div class="login-route-wrap">
@@ -39,8 +39,8 @@
     </div>
 
     <div class="login-telemetry">
-      <div><strong>42</strong>araç · aktif filo</div>
-      <div><strong>2 dk</strong>önce senkron</div>
+      <div><strong>42</strong>{{ 'authOrtak.telemetriFilo' | translate }}</div>
+      <div><strong>2 dk</strong>{{ 'authOrtak.telemetriSenkron' | translate }}</div>
     </div>
   </div>
 
@@ -48,12 +48,12 @@
   <div class="login-form">
     @if (!gonderildi()) {
       <div>
-        <h2>Şifremi Unuttum</h2>
-        <p class="login-form-sub">Kayıtlı e-posta adresini gir, sıfırlama bağlantısı gönderelim.</p>
+        <h2>{{ 'sifremiUnuttum.baslik' | translate }}</h2>
+        <p class="login-form-sub">{{ 'sifremiUnuttum.altBaslik' | translate }}</p>
       </div>
 
       <div class="field">
-        <label for="email">E-posta</label>
+        <label for="email">{{ 'sifremiUnuttum.email' | translate }}</label>
         <dx-text-box
           id="email"
           mode="email"
@@ -69,7 +69,7 @@
 
       <dx-button
         class="login-buton"
-        [text]="gonderiliyor() ? 'Gönderiliyor...' : 'Sıfırlama Bağlantısı Gönder'"
+        [text]="(gonderiliyor() ? 'sifremiUnuttum.gonderiliyor' : 'sifremiUnuttum.gonder') | translate"
         type="default"
         width="100%"
         [disabled]="gonderiliyor()"
@@ -77,11 +77,11 @@
       ></dx-button>
     } @else {
       <div>
-        <h2>Kontrol Et</h2>
+        <h2>{{ 'sifremiUnuttum.kontrolEt' | translate }}</h2>
         <p class="login-form-sub">{{ sonucMesaji() }}</p>
       </div>
     }
 
-    <p class="login-form-foot"><a routerLink="/login">← Girişe dön</a></p>
+    <p class="login-form-foot"><a routerLink="/login">← {{ 'sifremiUnuttum.girisDon' | translate }}</a></p>
   </div>
 </div>

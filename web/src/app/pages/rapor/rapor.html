@@ -1,5 +1,5 @@
 <section class="panel panel-form">
-  <div class="panel-head"><span class="panel-eyebrow">Araç Hareket Raporu</span></div>
+  <div class="panel-head"><span class="panel-eyebrow">{{ 'rapor.baslik' | translate }}</span></div>
 
   <!-- #raporFieldRow: alttaki taşma alanının genişliğini BU satırın GERÇEK render genişliğine
        (ResizeObserver ile ölçülüyor, bkz. rapor.ts) kilitlemek için referans - CSS-only shrink-to-
@@ -11,15 +11,15 @@
        otomatik doğru kalır. -->
   <div class="field-row" #raporFieldRow>
     <div class="field">
-      <label for="tarihAraligi">Tarih Aralığı</label>
+      <label for="tarihAraligi">{{ 'rapor.tarihAraligi' | translate }}</label>
       <dx-date-range-box
         id="tarihAraligi"
         [startDate]="baslangicDate"
         (startDateChange)="baslangicDateDegisti($event)"
         [endDate]="bitisDate"
         (endDateChange)="bitisDateDegisti($event)"
-        startDatePlaceholder="Başlangıç"
-        endDatePlaceholder="Bitiş"
+        [startDatePlaceholder]="'rapor.baslangic' | translate"
+        [endDatePlaceholder]="'rapor.bitis' | translate"
         labelMode="hidden"
         displayFormat="dd.MM.yyyy"
         [showClearButton]="false"
@@ -28,14 +28,14 @@
     </div>
 
     <div class="field">
-      <label for="plakaSecim">Plaka</label>
+      <label for="plakaSecim">{{ 'rapor.plaka' | translate }}</label>
       <div class="plaka-secim-kutusu">
         <dx-tag-box
           id="plakaSecim"
           [dataSource]="plakalar()"
           displayExpr="aracPlaka"
           valueExpr="aracPlaka"
-          placeholder="Plaka ara..."
+          [placeholder]="'rapor.plakaAraPlaceholder' | translate"
           [searchEnabled]="true"
           [showSelectionControls]="true"
           [multiline]="false"
@@ -53,14 +53,14 @@
       <label>&nbsp;</label>
       <label class="toggle-detayli">
         <dx-check-box [value]="detayliRapor" (onValueChanged)="detayliRapor = !!$event.value"></dx-check-box>
-        <span>Detaylı Rapor (gün gün)</span>
+        <span>{{ 'rapor.detayliRapor' | translate }}</span>
       </label>
     </div>
 
     <div class="field">
       <label>&nbsp;</label>
       <dx-button
-        [text]="yukleniyor() ? 'Oluşturuluyor…' : 'Rapor Oluştur'"
+        [text]="(yukleniyor() ? 'rapor.olusturuluyor' : 'rapor.raporOlustur') | translate"
         type="default"
         [disabled]="!raporOlusturEtkin() || yukleniyor()"
         (onClick)="raporOlustur()"
@@ -76,11 +76,11 @@
       @for (plaka of plakaCipGorunumu().gosterilenler; track plaka) {
         <span class="plaka-chip plaka-chip-cikarilabilir">
           {{ plaka }}
-          <button type="button" class="plaka-chip-x" (click)="plakaCipiKaldir(plaka)" [attr.aria-label]="'Kaldır: ' + plaka">×</button>
+          <button type="button" class="plaka-chip-x" (click)="plakaCipiKaldir(plaka)" [attr.aria-label]="('liste.kaldir' | translate) + ': ' + plaka">×</button>
         </span>
       }
       @if (plakaCipGorunumu().fazlaSayisi > 0) {
-        <span class="plaka-chip plaka-chip-tasma-uyari">+{{ plakaCipGorunumu().fazlaSayisi }} daha…</span>
+        <span class="plaka-chip plaka-chip-tasma-uyari">+{{ plakaCipGorunumu().fazlaSayisi }} {{ 'liste.daha' | translate }}</span>
       }
     </div>
   }
@@ -90,15 +90,15 @@
 
 @if (raporUretildi() && !detayliRapor) {
   <section class="panel">
-    <div class="panel-head"><span class="panel-eyebrow">Sonuç — Özet</span></div>
+    <div class="panel-head"><span class="panel-eyebrow">{{ 'rapor.sonucOzet' | translate }}</span></div>
     <dx-data-grid
       [dataSource]="ozetSonuclar()"
-      [columns]="ozetColumns"
+      [columns]="ozetColumns()"
       [showBorders]="true"
       [showColumnLines]="true"
       [showRowLines]="true"
       [rowAlternationEnabled]="true"
-      [searchPanel]="{ visible: true, placeholder: 'Ara...' }"
+      [searchPanel]="{ visible: true, placeholder: ('liste.araPlaceholder' | translate) }"
       [export]="{ enabled: true }"
       (onExporting)="onExportingOzet($event)"
     ></dx-data-grid>
@@ -107,17 +107,17 @@
 
 @if (raporUretildi() && detayliRapor) {
   <section class="panel">
-    <div class="panel-head"><span class="panel-eyebrow">Sonuç — Detaylı</span></div>
+    <div class="panel-head"><span class="panel-eyebrow">{{ 'rapor.sonucDetay' | translate }}</span></div>
     <dx-data-grid
       [dataSource]="detaySonuclar()"
-      [columns]="detayColumns"
+      [columns]="detayColumns()"
       [showBorders]="true"
       [showColumnLines]="true"
       [showRowLines]="true"
       [rowAlternationEnabled]="true"
       [paging]="{ pageSize: 25 }"
       [pager]="{ visible: true, showPageSizeSelector: true, allowedPageSizes: [10, 25, 50, 100], showInfo: true }"
-      [searchPanel]="{ visible: true, placeholder: 'Ara...' }"
+      [searchPanel]="{ visible: true, placeholder: ('liste.araPlaceholder' | translate) }"
       [export]="{ enabled: true }"
       (onExporting)="onExportingDetay($event)"
     ></dx-data-grid>

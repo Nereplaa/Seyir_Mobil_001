@@ -1,26 +1,30 @@
 import { Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { DxTextBoxModule, DxButtonModule } from 'devextreme-angular';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-sifremi-unuttum',
-  imports: [RouterLink, DxTextBoxModule, DxButtonModule],
+  imports: [RouterLink, DxTextBoxModule, DxButtonModule, TranslatePipe],
   templateUrl: './sifremi-unuttum.html',
   styleUrl: './sifremi-unuttum.css',
 })
 export class SifremiUnuttum {
   private readonly auth = inject(Auth);
+  private readonly translate = inject(TranslateService);
 
   email = signal('');
   hataMesaji = signal('');
+  // Backend'den gelen yanit mesaji (yanit.message) backend'in kendi dilinde (Turkce) - frontend
+  // i18n'i sadece istemci tarafinda uretilen metinleri kapsiyor, bu bilincli bir sinir.
   sonucMesaji = signal('');
   gonderiliyor = signal(false);
   gonderildi = signal(false);
 
   gonder(): void {
     if (!this.email().trim() || !this.email().includes('@')) {
-      this.hataMesaji.set('Geçerli bir e-posta adresi girin.');
+      this.hataMesaji.set(this.translate.instant('sifremiUnuttum.hataGecersizEmail'));
       return;
     }
 
@@ -34,7 +38,7 @@ export class SifremiUnuttum {
       },
       error: () => {
         this.gonderiliyor.set(false);
-        this.hataMesaji.set('İstek gönderilemedi. Backend API çalışıyor mu?');
+        this.hataMesaji.set(this.translate.instant('sifremiUnuttum.hataBaglanti'));
       },
     });
   }

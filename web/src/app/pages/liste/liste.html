@@ -1,40 +1,40 @@
 <section class="panel panel-form">
-  <div class="panel-head"><span class="panel-eyebrow">Yeni Kayıt Ekle</span></div>
+  <div class="panel-head"><span class="panel-eyebrow">{{ 'liste.baslikYeniKayit' | translate }}</span></div>
   <div class="field-row">
     <div class="field">
-      <label for="wizardPlaka">1. Plaka</label>
+      <label for="wizardPlaka">{{ 'liste.adimPlaka' | translate }}</label>
       <dx-select-box id="wizardPlaka" [dataSource]="plakalar()" displayExpr="aracPlaka" valueExpr="aracId"
-        placeholder="— Seçiniz —" [value]="wizardAracId" (onValueChanged)="wizardPlakaDegisti($event)"
+        [placeholder]="'liste.secPlaceholder' | translate" [value]="wizardAracId" (onValueChanged)="wizardPlakaDegisti($event)"
         width="200"></dx-select-box>
     </div>
 
     @if (wizardAracId != null) {
     <div class="field">
-      <label for="wizardTarih">2. Veri Tarihi</label>
+      <label for="wizardTarih">{{ 'liste.adimTarih' | translate }}</label>
       <dx-date-box id="wizardTarih" type="date" pickerType="calendar" displayFormat="dd.MM.yyyy"
         [value]="wizardTarihDate" (onValueChanged)="wizardTarihDegisti($event)" width="160"></dx-date-box>
     </div>
     <div class="field">
       <label>&nbsp;</label>
-      <dx-button text="Tarihi Onayla →" type="normal" stylingMode="outlined" [disabled]="sinirlarHesaplaniyor()"
+      <dx-button [text]="('liste.tarihiOnayla' | translate) + ' →'" type="normal" stylingMode="outlined" [disabled]="sinirlarHesaplaniyor()"
         (onClick)="tarihiOnayla()"></dx-button>
     </div>
     }
 
     @if (tarihOnaylandi()) {
     <div class="field">
-      <label for="wizardHiz">3. Hız</label>
+      <label for="wizardHiz">{{ 'liste.adimHiz' | translate }}</label>
       <dx-number-box id="wizardHiz" [min]="0" [max]="300" [value]="wizardHiz"
         (onValueChanged)="wizardHiz = $event.value ?? 0" width="90"></dx-number-box>
     </div>
     <div class="field">
-      <label for="wizardKm">4. Km Sayacı</label>
+      <label for="wizardKm">{{ 'liste.adimKm' | translate }}</label>
       <dx-number-box id="wizardKm" format="#,##0.00" [min]="kmMin()" [max]="kmMax()" [value]="wizardKm"
         (onValueChanged)="wizardKm = $event.value ?? 0" width="150"></dx-number-box>
     </div>
     <div class="field">
       <label>&nbsp;</label>
-      <dx-button text="Ekle" type="default" [disabled]="!ekleEtkin() || ekleniyor()" (onClick)="ekle()"></dx-button>
+      <dx-button [text]="'liste.ekle' | translate" type="default" [disabled]="!ekleEtkin() || ekleniyor()" (onClick)="ekle()"></dx-button>
     </div>
     }
   </div>
@@ -45,7 +45,7 @@
 </section>
 
 <section class="panel">
-  <div class="panel-head"><span class="panel-eyebrow">Araç Hareketleri</span></div>
+  <div class="panel-head"><span class="panel-eyebrow">{{ 'liste.baslikAracHareketleri' | translate }}</span></div>
 
   <!-- Filtre alanları VE tüm aksiyon butonları TEK bir satırda (2026-08-07 geri bildirimi:
        "hiçbir buton alt satıra geçmeyecek, hepsi input'larla aynı tek satırda kalacak") - eskiden
@@ -54,13 +54,13 @@
        bir iç sistem olduğu için normalde beklenmiyor) satır kırılmak yerine yatay kaydırılıyor. -->
   <div class="filtre-toolbar">
     <div class="field" #filtrePlakaAlan>
-      <label for="filtrePlaka">Plaka</label>
+      <label for="filtrePlaka">{{ 'liste.filtrePlaka' | translate }}</label>
       <!-- İçeride plaka/çip göstermiyoruz artık (2026-08-10 geri bildirimi) - kutunun kendi
            çipleri CSS ile gizli (liste.css), yerine seçili sayıyı gösteren kendi yazdığımız bir
            katman var (.plaka-secim-sayisi, pointer-events:none - tıklamalar gerçek input'a geçer,
            dropdown açılmaya devam eder). -->
       <div class="plaka-secim-kutusu">
-        <dx-tag-box id="filtrePlaka" [dataSource]="filtrePlakaListesi()" placeholder="Tümü" [searchEnabled]="true"
+        <dx-tag-box id="filtrePlaka" [dataSource]="filtrePlakaListesi()" [placeholder]="'liste.filtreTumu' | translate" [searchEnabled]="true"
           [showSelectionControls]="true" [multiline]="false" [value]="filtreSeciliPlakalar()"
           (onValueChanged)="filtreSeciliPlakalarDegisti($event)" width="220"></dx-tag-box>
         @if (filtreSeciliPlakalar().length > 0) {
@@ -69,34 +69,34 @@
       </div>
     </div>
     <div class="field">
-      <label for="filtreTarih">Tarih Aralığı</label>
+      <label for="filtreTarih">{{ 'liste.filtreTarihAraligi' | translate }}</label>
       <div style="display: flex; align-items: center; gap: 0.4rem">
         <dx-check-box [value]="filtreTarihAktif" (onValueChanged)="filtreTarihAktif = !!$event.value"></dx-check-box>
         <dx-date-range-box id="filtreTarih" [startDate]="filtreBaslangicDate"
           (startDateChange)="filtreBaslangicDateDegisti($event)" [endDate]="filtreBitisDate"
-          (endDateChange)="filtreBitisDateDegisti($event)" startDatePlaceholder="Başlangıç" endDatePlaceholder="Bitiş"
+          (endDateChange)="filtreBitisDateDegisti($event)" [startDatePlaceholder]="'liste.filtreBaslangic' | translate" [endDatePlaceholder]="'liste.filtreBitis' | translate"
           labelMode="hidden" displayFormat="dd.MM.yyyy" [showClearButton]="false" [disabled]="!filtreTarihAktif"
           width="280"></dx-date-range-box>
       </div>
     </div>
     <div class="field">
-      <label for="filtreHiz">Hız</label>
+      <label for="filtreHiz">{{ 'liste.filtreHiz' | translate }}</label>
       <dx-number-box id="filtreHiz" [showClearButton]="true" [value]="$any(filtreHiz)"
         (onValueChanged)="filtreHiz = $event.value ?? null" width="90"></dx-number-box>
     </div>
     <div class="field" #filtreKmAlan>
-      <label for="filtreKm">Km Sayacı</label>
+      <label for="filtreKm">{{ 'liste.filtreKm' | translate }}</label>
       <dx-number-box id="filtreKm" format="#,##0.00" [showClearButton]="true" [value]="$any(filtreKm)"
         (onValueChanged)="filtreKm = $event.value ?? null" width="120"></dx-number-box>
     </div>
 
     <div class="filtre-toolbar-actions">
-      <dx-button text="Filtrele" type="default" (onClick)="filtreleUygula()"></dx-button>
-      <dx-button text="Temizle" type="normal" stylingMode="outlined" (onClick)="filtreleTemizle()"></dx-button>
-      <dx-button text="Yenile" type="normal" stylingMode="outlined" (onClick)="refreshGrid()"></dx-button>
-      <dx-button text="Sil" type="danger" [disabled]="!seciliHareket()" (onClick)="sil()"></dx-button>
+      <dx-button [text]="'liste.filtrele' | translate" type="default" (onClick)="filtreleUygula()"></dx-button>
+      <dx-button [text]="'liste.temizle' | translate" type="normal" stylingMode="outlined" (onClick)="filtreleTemizle()"></dx-button>
+      <dx-button [text]="'liste.yenile' | translate" type="normal" stylingMode="outlined" (onClick)="refreshGrid()"></dx-button>
+      <dx-button [text]="'liste.sil' | translate" type="danger" [disabled]="!seciliHareket()" (onClick)="sil()"></dx-button>
       <input #importDosyaSecici type="file" accept=".xlsx" hidden (change)="excelDenAktarSecildi($event)" />
-      <dx-button text="Excel'den Veri Aktar" type="normal" stylingMode="outlined"
+      <dx-button [text]="'liste.exceldenVeriAktar' | translate" type="normal" stylingMode="outlined"
         (onClick)="importDosyaSecici.click()"></dx-button>
     </div>
   </div>
@@ -112,11 +112,11 @@
       @for (plaka of plakaCipGorunumu().gosterilenler; track plaka) {
         <span class="plaka-chip plaka-chip-cikarilabilir">
           {{ plaka }}
-          <button type="button" class="plaka-chip-x" (click)="plakaCipiKaldir(plaka)" [attr.aria-label]="'Kaldır: ' + plaka">×</button>
+          <button type="button" class="plaka-chip-x" (click)="plakaCipiKaldir(plaka)" [attr.aria-label]="('liste.kaldir' | translate) + ': ' + plaka">×</button>
         </span>
       }
       @if (plakaCipGorunumu().fazlaSayisi > 0) {
-        <span class="plaka-chip plaka-chip-tasma-uyari">+{{ plakaCipGorunumu().fazlaSayisi }} daha…</span>
+        <span class="plaka-chip plaka-chip-tasma-uyari">+{{ plakaCipGorunumu().fazlaSayisi }} {{ 'liste.daha' | translate }}</span>
       }
     </div>
   }
@@ -125,7 +125,7 @@
   <p class="error-text" style="margin-top: 0.5rem">{{ filtreHatasi() }}</p>
   }
 
-  <dx-data-grid [dataSource]="gosterilenHareketler()" [columns]="dataGridColumns" [showBorders]="true"
+  <dx-data-grid [dataSource]="gosterilenHareketler()" [columns]="dataGridColumns()" [showBorders]="true"
     [showColumnLines]="true" [showRowLines]="true" [rowAlternationEnabled]="true" [selection]="{ mode: 'single' }"
     [paging]="{ pageSize: ilkSayfaBoyutu }" [pager]="{
       visible: true,
@@ -133,7 +133,7 @@
       allowedPageSizes: sayfaBoyutuSecenekleri,
       showInfo: true,
       showNavigationButtons: true
-    }" [searchPanel]="{ visible: true, placeholder: 'Ara...' }" [export]="{ enabled: true }"
+    }" [searchPanel]="{ visible: true, placeholder: ('liste.araPlaceholder' | translate) }" [export]="{ enabled: true }"
     (onSelectionChanged)="onSelectionChanged($event)" (onExporting)="onExporting($event)"></dx-data-grid>
 
   <p class="status-text" style="margin-top: 0.75rem">{{ statusText() }}</p>

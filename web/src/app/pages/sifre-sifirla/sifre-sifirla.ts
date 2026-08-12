@@ -1,17 +1,19 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { DxTextBoxModule, DxButtonModule } from 'devextreme-angular';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Auth } from '../../services/auth';
 
 @Component({
   selector: 'app-sifre-sifirla',
-  imports: [RouterLink, DxTextBoxModule, DxButtonModule],
+  imports: [RouterLink, DxTextBoxModule, DxButtonModule, TranslatePipe],
   templateUrl: './sifre-sifirla.html',
   styleUrl: './sifre-sifirla.css',
 })
 export class SifreSifirla implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly auth = inject(Auth);
+  private readonly translate = inject(TranslateService);
 
   token = '';
   yeniSifre = signal('');
@@ -23,7 +25,7 @@ export class SifreSifirla implements OnInit {
   ngOnInit(): void {
     this.token = this.route.snapshot.queryParamMap.get('token') ?? '';
     if (!this.token) {
-      this.hataMesaji.set('Geçersiz sıfırlama bağlantısı. Yeniden "Şifremi Unuttum" isteğinde bulun.');
+      this.hataMesaji.set(this.translate.instant('sifreSifirla.hataGecersizToken'));
     }
   }
 
@@ -32,11 +34,11 @@ export class SifreSifirla implements OnInit {
       return;
     }
     if (this.yeniSifre().length < 6) {
-      this.hataMesaji.set('Şifre en az 6 karakter olmalı.');
+      this.hataMesaji.set(this.translate.instant('sifreSifirla.hataKisaSifre'));
       return;
     }
     if (this.yeniSifre() !== this.yeniSifreTekrar()) {
-      this.hataMesaji.set('Şifreler eşleşmiyor.');
+      this.hataMesaji.set(this.translate.instant('sifreSifirla.hataEslesmeyenSifre'));
       return;
     }
 
@@ -49,7 +51,7 @@ export class SifreSifirla implements OnInit {
       },
       error: (err) => {
         this.gonderiliyor.set(false);
-        this.hataMesaji.set(err.error?.message ?? 'Şifre sıfırlanamadı. Backend API çalışıyor mu?');
+        this.hataMesaji.set(err.error?.message ?? this.translate.instant('sifreSifirla.hataBaglanti'));
       },
     });
   }

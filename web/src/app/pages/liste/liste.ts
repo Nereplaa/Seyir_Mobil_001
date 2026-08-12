@@ -19,6 +19,7 @@ import {
   DxCheckBoxModule,
   DxButtonModule,
 } from 'devextreme-angular';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
 import { AracHareketApi } from '../../services/arac-hareket-api';
@@ -64,6 +65,7 @@ function isoToTarih(iso: string): Date {
     DxNumberBoxModule,
     DxCheckBoxModule,
     DxButtonModule,
+    TranslatePipe,
   ],
   templateUrl: './liste.html',
   styleUrl: './liste.css',
@@ -73,6 +75,7 @@ export class Liste implements OnInit, OnDestroy {
   private readonly router = inject(Router);
   private readonly importDosyaKoprusu = inject(ImportDosyaKoprusu);
   private readonly bildirim = inject(Bildirim);
+  private readonly translate = inject(TranslateService);
 
   // Plaka çip taşma alanının sağ kenarını Km Sayacı'nın sağ kenarıyla hizalamak için Plaka'nın
   // sol kenarı - Km Sayacı'nın sağ kenarı arasındaki GERÇEK mesafeyi ölçüyoruz (Rapor sayfasındaki
@@ -123,30 +126,40 @@ export class Liste implements OnInit, OnDestroy {
   readonly sayfaBoyutuSecenekleri = [10, 25, 50, 100];
   readonly ilkSayfaBoyutu = 25;
 
-  readonly dataGridColumns = [
-    { dataField: 'aracId', caption: 'Araç ID', width: 115, alignment: 'left' as const, cssClass: 'col-numeric' },
-    {
-      dataField: 'aracPlaka',
-      caption: 'Araç Plaka',
-      width: 150,
-      cellTemplate: (cellElement: HTMLElement, cellInfo: { value?: string }) => {
-        const span = document.createElement('span');
-        span.className = 'plaka-chip';
-        span.textContent = cellInfo.value ?? '';
-        cellElement.appendChild(span);
+  // Kolon basliklari ceviri iceriyor - dil degisince yeniden kurulmasi gerekiyor (bkz.
+  // constructor'daki onLangChange abonesi), bu yuzden sabit dizi degil signal.
+  readonly dataGridColumns = signal(this.kolonlariKur());
+
+  private kolonlariKur() {
+    return [
+      { dataField: 'aracId', caption: this.translate.instant('liste.kolonAracId'), width: 115, alignment: 'left' as const, cssClass: 'col-numeric' },
+      {
+        dataField: 'aracPlaka',
+        caption: this.translate.instant('liste.kolonAracPlaka'),
+        width: 150,
+        cellTemplate: (cellElement: HTMLElement, cellInfo: { value?: string }) => {
+          const span = document.createElement('span');
+          span.className = 'plaka-chip';
+          span.textContent = cellInfo.value ?? '';
+          cellElement.appendChild(span);
+        },
       },
-    },
-    {
-      dataField: 'veriTarihi',
-      caption: 'Veri Tarihi',
-      width: 130,
-      cssClass: 'col-numeric',
-      calculateSortValue: 'veriTarihi',
-      customizeText: (cellInfo: { value?: string }) => (cellInfo.value ? this.formatTarih(cellInfo.value) : ''),
-    },
-    { dataField: 'hiz', caption: 'Hız', width: 90, alignment: 'left' as const, cssClass: 'col-numeric' },
-    { dataField: 'kmSayaci', caption: 'Km Sayacı', format: '#,##0.00', cssClass: 'col-numeric' },
-  ];
+      {
+        dataField: 'veriTarihi',
+        caption: this.translate.instant('liste.kolonVeriTarihi'),
+        width: 130,
+        cssClass: 'col-numeric',
+        calculateSortValue: 'veriTarihi',
+        customizeText: (cellInfo: { value?: string }) => (cellInfo.value ? this.formatTarih(cellInfo.value) : ''),
+      },
+      { dataField: 'hiz', caption: this.translate.instant('liste.kolonHiz'), width: 90, alignment: 'left' as const, cssClass: 'col-numeric' },
+      { dataField: 'kmSayaci', caption: this.translate.instant('liste.kolonKmSayaci'), format: '#,##0.00', cssClass: 'col-numeric' },
+    ];
+  }
+
+  constructor() {
+    this.translate.onLangChange.subscribe(() => this.dataGridColumns.set(this.kolonlariKur()));
+  }
 
   onSelectionChanged(event: { selectedRowsData: AracHareketDto[] }): void {
     this.seciliHareket.set(event.selectedRowsData[0] ?? null);
@@ -228,7 +241,7 @@ export class Liste implements OnInit, OnDestroy {
   // ---------- Ana liste ----------
 
   refreshGrid(): void {
-    this.statusText.set('Yükleniyor...');
+    this.statusText.set(this.translate.instant('liste.yukleniyor'));
     this.api.getTumHareketler().subscribe({
       next: (hareketler) => {
         this.tumHareketler.set(hareketler);
@@ -239,18 +252,20 @@ export class Liste implements OnInit, OnDestroy {
         if (this.filtreAktifMi()) {
           const sonuc = this.filtreleUygulaKriterleri(hareketler);
           this.gosterilenHareketler.set(sonuc);
-          this.statusText.set(`${sonuc.length} / ${hareketler.length} kayıt gösteriliyor (filtreli).`);
+          this.statusText.set(
+            this.translate.instant('liste.kayitGosteriliyorFiltreli', { gosterilen: sonuc.length, toplam: hareketler.length })
+          );
         } else {
           this.gosterilenHareketler.set(hareketler);
-          this.statusText.set(`${hareketler.length} hareket kaydı yüklendi.`);
+          this.statusText.set(this.translate.instant('liste.hareketKaydiYuklendi', { sayi: hareketler.length }));
         }
       },
       error: (err) => {
         if (oturumHatasiMi(err)) {
           return;
         }
-        this.statusText.set('Veri yüklenemedi.');
-        this.bildirim.hata(`Araç hareketleri alınamadı. Backend API çalışıyor mu?\n\nHata: ${err.message}`);
+        this.statusText.set(this.translate.instant('liste.veriYuklenemedi'));
+        this.bildirim.hata(`${this.translate.instant('liste.hataHareketlerAlinamadi')}\n\nHata: ${err.message}`);
       },
     });
   }
@@ -261,13 +276,16 @@ export class Liste implements OnInit, OnDestroy {
       return;
     }
     const onay = await this.bildirim.onaylaSil(
-      `"${secili.aracPlaka}" - ${this.formatTarih(secili.veriTarihi)} tarihli kaydı silmek istediğine emin misin?`
+      this.translate.instant('liste.silOnaySorusu', {
+        plaka: secili.aracPlaka,
+        tarih: this.formatTarih(secili.veriTarihi),
+      })
     );
     if (!onay) {
       return;
     }
 
-    this.statusText.set('Siliniyor...');
+    this.statusText.set(this.translate.instant('liste.siliniyor'));
     this.api.deleteHareket(secili.id).subscribe({
       next: () => {
         this.seciliHareket.set(null);
@@ -277,8 +295,8 @@ export class Liste implements OnInit, OnDestroy {
         if (oturumHatasiMi(err)) {
           return;
         }
-        this.statusText.set('Silme başarısız.');
-        this.bildirim.hata(`Kayıt silinemedi.\n\nHata: ${err.message}`);
+        this.statusText.set(this.translate.instant('liste.silmeBasarisiz'));
+        this.bildirim.hata(`${this.translate.instant('liste.hataKayitSilinemedi')}\n\nHata: ${err.message}`);
       },
     });
   }
@@ -290,7 +308,7 @@ export class Liste implements OnInit, OnDestroy {
       next: (plakalar) => this.plakalar.set(plakalar),
       error: (err) => {
         if (!oturumHatasiMi(err)) {
-          this.bildirim.hata(`Plaka listesi alınamadı.\n\nHata: ${err.message}`);
+          this.bildirim.hata(`${this.translate.instant('liste.hataPlakaListesiAlinamadi')}\n\nHata: ${err.message}`);
         }
       },
     });
@@ -343,7 +361,7 @@ export class Liste implements OnInit, OnDestroy {
 
     const buSurum = ++this.sinirSorgusuSurumu;
     this.sinirlarHesaplaniyor.set(true);
-    this.statusText.set('Sınırlar hesaplanıyor...');
+    this.statusText.set(this.translate.instant('liste.sinirlarHesaplaniyor'));
 
     this.api.getSinirlar(plaka, tarihToIso(this.wizardTarihDate)).subscribe({
       next: (sinirlar: AracHareketSinirlarDto) => {
@@ -353,7 +371,7 @@ export class Liste implements OnInit, OnDestroy {
         this.sinirlarHesaplaniyor.set(false);
 
         if (sinirlar.ayniTarihVarMi) {
-          this.statusText.set('Bu plaka için bu tarihte zaten bir kayıt var. Farklı bir tarih seçin.');
+          this.statusText.set(this.translate.instant('liste.ayniTarihKaydiVar'));
           return;
         }
 
@@ -361,9 +379,7 @@ export class Liste implements OnInit, OnDestroy {
         const max = sinirlar.sonrakiKm != null ? sinirlar.sonrakiKm - 0.01 : 99999999.99;
 
         if (min > max) {
-          this.statusText.set(
-            'Bu tarih için geçerli bir km aralığı yok (önceki/sonraki okumalar birbirine çok yakın).'
-          );
+          this.statusText.set(this.translate.instant('liste.gecerliKmAraligiYok'));
           return;
         }
 
@@ -373,24 +389,32 @@ export class Liste implements OnInit, OnDestroy {
         this.wizardHiz = 0;
 
         const oncekiMetin = sinirlar.oncekiTarih
-          ? `Önceki: ${this.formatTarih(sinirlar.oncekiTarih)} → ${sinirlar.oncekiKm?.toFixed(2)} km`
-          : 'Önceki: yok (bu, ilk kayıt olacak)';
+          ? this.translate.instant('liste.oncekiMetin', {
+              tarih: this.formatTarih(sinirlar.oncekiTarih),
+              km: sinirlar.oncekiKm?.toFixed(2),
+            })
+          : this.translate.instant('liste.oncekiYok');
         const sonrakiMetin = sinirlar.sonrakiTarih
-          ? `Sonraki: ${this.formatTarih(sinirlar.sonrakiTarih)} → ${sinirlar.sonrakiKm?.toFixed(2)} km`
-          : 'Sonraki: yok (bu, son kayıt olacak)';
-        this.sinirBilgisi.set(`${oncekiMetin}\n${sonrakiMetin}\nGirilecek km bu ikisinin arasında olmalı.`);
+          ? this.translate.instant('liste.sonrakiMetin', {
+              tarih: this.formatTarih(sinirlar.sonrakiTarih),
+              km: sinirlar.sonrakiKm?.toFixed(2),
+            })
+          : this.translate.instant('liste.sonrakiYok');
+        this.sinirBilgisi.set(
+          `${oncekiMetin}\n${sonrakiMetin}\n${this.translate.instant('liste.kmAraligiBilgisi')}`
+        );
 
         this.tarihOnaylandi.set(true);
         this.ekleEtkin.set(true);
-        this.statusText.set('Hız ve km sayacını girip Ekle\'ye basabilirsin.');
+        this.statusText.set(this.translate.instant('liste.hizVeKmGirin'));
       },
       error: (err) => {
         if (buSurum !== this.sinirSorgusuSurumu || oturumHatasiMi(err)) {
           return;
         }
         this.sinirlarHesaplaniyor.set(false);
-        this.statusText.set('Sınırlar hesaplanamadı.');
-        this.bildirim.hata(`Sınırlar hesaplanamadı.\n\nHata: ${err.message}`);
+        this.statusText.set(this.translate.instant('liste.sinirlarHesaplanamadi'));
+        this.bildirim.hata(`${this.translate.instant('liste.sinirlarHesaplanamadi')}\n\nHata: ${err.message}`);
       },
     });
   }
@@ -401,12 +425,14 @@ export class Liste implements OnInit, OnDestroy {
       return;
     }
     if (this.wizardKm < this.kmMin() || this.wizardKm > this.kmMax()) {
-      this.bildirim.hata(`Km sayacı ${this.kmMin().toFixed(2)} ile ${this.kmMax().toFixed(2)} arasında olmalı.`);
+      this.bildirim.hata(
+        this.translate.instant('liste.hataKmAraligi', { min: this.kmMin().toFixed(2), max: this.kmMax().toFixed(2) })
+      );
       return;
     }
 
     this.ekleniyor.set(true);
-    this.statusText.set('Ekleniyor...');
+    this.statusText.set(this.translate.instant('liste.ekleniyorDurum'));
     this.api
       .createHareket({
         aracId: arac.aracId,
@@ -417,7 +443,7 @@ export class Liste implements OnInit, OnDestroy {
       })
       .subscribe({
         next: () => {
-          this.statusText.set('Kayıt eklendi.');
+          this.statusText.set(this.translate.instant('liste.kayitEklendi'));
           this.wizardAracId = null;
           this.sonrakiAdimlariSifirla();
           this.ekleniyor.set(false);
@@ -428,8 +454,8 @@ export class Liste implements OnInit, OnDestroy {
           if (oturumHatasiMi(err)) {
             return;
           }
-          this.statusText.set('Ekleme başarısız.');
-          this.bildirim.hata(`Kayıt eklenemedi.\n\nHata: ${err.message}`);
+          this.statusText.set(this.translate.instant('liste.eklemeBasarisiz'));
+          this.bildirim.hata(`${this.translate.instant('liste.hataKayitEklenemedi')}\n\nHata: ${err.message}`);
         },
       });
   }
@@ -484,7 +510,12 @@ export class Liste implements OnInit, OnDestroy {
     this.filtreHatasi.set('');
     const sonuc = this.filtreleUygulaKriterleri(this.tumHareketler());
     this.gosterilenHareketler.set(sonuc);
-    this.statusText.set(`${sonuc.length} / ${this.tumHareketler().length} kayıt gösteriliyor (filtreli).`);
+    this.statusText.set(
+      this.translate.instant('liste.kayitGosteriliyorFiltreli', {
+        gosterilen: sonuc.length,
+        toplam: this.tumHareketler().length,
+      })
+    );
   }
 
   filtreleTemizle(): void {
@@ -496,7 +527,7 @@ export class Liste implements OnInit, OnDestroy {
     this.filtreKm = null;
     this.filtreHatasi.set('');
     this.gosterilenHareketler.set(this.tumHareketler());
-    this.statusText.set(`${this.tumHareketler().length} hareket kaydı yüklendi.`);
+    this.statusText.set(this.translate.instant('liste.hareketKaydiYuklendi', { sayi: this.tumHareketler().length }));
   }
 
   // ---------- Excel'e Aktar (DevExtreme dx-data-grid'in kendi export'u, tarayicida ureterek) ----------

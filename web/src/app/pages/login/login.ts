@@ -1,18 +1,20 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { DxTextBoxModule, DxButtonModule } from 'devextreme-angular';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Auth } from '../../services/auth';
 import { rolBaslangicRotasi } from '../../utils/rol-yonlendirme';
 
 @Component({
   selector: 'app-login',
-  imports: [RouterLink, DxTextBoxModule, DxButtonModule],
+  imports: [RouterLink, DxTextBoxModule, DxButtonModule, TranslatePipe],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
 export class Login {
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
+  private readonly translate = inject(TranslateService);
 
   username = signal('');
   password = signal('');
@@ -21,7 +23,7 @@ export class Login {
 
   girisYap(): void {
     if (!this.username().trim() || !this.password()) {
-      this.hataMesaji.set('Kullanıcı adı ve şifre gerekli.');
+      this.hataMesaji.set(this.translate.instant('login.hataEksikAlan'));
       return;
     }
 
@@ -35,9 +37,7 @@ export class Login {
       error: (hata) => {
         this.girisYapiliyor.set(false);
         this.hataMesaji.set(
-          hata.status === 401
-            ? 'Kullanıcı adı veya şifre hatalı.'
-            : 'Giriş yapılamadı. Backend API çalışıyor mu?'
+          this.translate.instant(hata.status === 401 ? 'login.hataYanlisBilgi' : 'login.hataBaglanti')
         );
       },
     });

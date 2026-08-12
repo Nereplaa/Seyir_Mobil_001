@@ -6,7 +6,7 @@
         <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4" />
         <path d="M15.5 8.5 L11 11 L8.5 15.5 L13 13 Z" fill="currentColor" />
       </svg>
-      Seyir Mobil
+      {{ 'authOrtak.marka' | translate }}
     </div>
 
     <div class="login-route-wrap">
@@ -39,8 +39,8 @@
     </div>
 
     <div class="login-telemetry">
-      <div><strong>42</strong>araç · aktif filo</div>
-      <div><strong>2 dk</strong>önce senkron</div>
+      <div><strong>42</strong>{{ 'authOrtak.telemetriFilo' | translate }}</div>
+      <div><strong>2 dk</strong>{{ 'authOrtak.telemetriSenkron' | translate }}</div>
     </div>
   </div>
 
@@ -48,30 +48,30 @@
   <div class="login-form">
     @if (basariliMi()) {
       <div>
-        <h2>Şifre Güncellendi</h2>
-        <p class="login-form-sub">Yeni şifrenle giriş yapabilirsin.</p>
+        <h2>{{ 'sifreSifirla.guncellendiBaslik' | translate }}</h2>
+        <p class="login-form-sub">{{ 'sifreSifirla.guncellendiAltBaslik' | translate }}</p>
       </div>
       <dx-button
         class="login-buton"
-        text="Girişe Dön"
+        [text]="'sifreSifirla.girisDon' | translate"
         type="default"
         width="100%"
         routerLink="/login"
       ></dx-button>
     } @else if (!token) {
       <div>
-        <h2>Geçersiz Bağlantı</h2>
+        <h2>{{ 'sifreSifirla.gecersizBaslik' | translate }}</h2>
         <p class="login-form-sub">{{ hataMesaji() }}</p>
       </div>
-      <p class="login-form-foot"><a routerLink="/sifremi-unuttum">← Şifremi Unuttum'a dön</a></p>
+      <p class="login-form-foot"><a routerLink="/sifremi-unuttum">← {{ 'sifreSifirla.sifremiUnuttumaDon' | translate }}</a></p>
     } @else {
       <div>
-        <h2>Yeni Şifre Belirle</h2>
-        <p class="login-form-sub">Hesabın için yeni bir şifre gir.</p>
+        <h2>{{ 'sifreSifirla.baslik' | translate }}</h2>
+        <p class="login-form-sub">{{ 'sifreSifirla.altBaslik' | translate }}</p>
       </div>
 
       <div class="field">
-        <label for="yeniSifre">Yeni Şifre</label>
+        <label for="yeniSifre">{{ 'sifreSifirla.yeniSifre' | translate }}</label>
         <dx-text-box
           id="yeniSifre"
           mode="password"
@@ -82,7 +82,7 @@
       </div>
 
       <div class="field">
-        <label for="yeniSifreTekrar">Yeni Şifre (Tekrar)</label>
+        <label for="yeniSifreTekrar">{{ 'sifreSifirla.yeniSifreTekrar' | translate }}</label>
         <dx-text-box
           id="yeniSifreTekrar"
           mode="password"
@@ -98,7 +98,7 @@
 
       <dx-button
         class="login-buton"
-        [text]="gonderiliyor() ? 'Kaydediliyor...' : 'Şifreyi Güncelle'"
+        [text]="(gonderiliyor() ? 'sifreSifirla.kaydediliyor' : 'sifreSifirla.sifreyiGuncelle') | translate"
         type="default"
         width="100%"
         [disabled]="gonderiliyor()"

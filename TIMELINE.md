@@ -555,6 +555,16 @@ yapılıyordu — artık gerçek mail gönderimi de çalıştığı kanıtlanmı
 
 ---
 
+## 2026-08-12 11:11 — Çoklu Dil Desteği Tüm Ekranlara Yayıldı
+
+Daha önce sadece üst menüde çalışan çoklu dil (Türkçe/İngilizce) desteği, artık uygulamanın
+tamamında geçerli: giriş ekranı, şifre sıfırlama akışı, ana liste ekranı, rapor ekranı, Excel içe
+aktarma ekranı ve yönetici paneli — hepsi dil seçiciyle birlikte anında değişiyor (tablo başlıkları,
+buton/etiket metinleri, hata ve durum mesajları dahil). Dil seçimi tarayıcıda hatırlanmaya devam
+ediyor.
+
+---
+
 ## 🔜 Sıradaki Adımlar
 
 - [x] Web istemcisinin eklenmesi (aynı backend API üzerinden)
@@ -573,5 +583,5 @@ yapılıyordu — artık gerçek mail gönderimi de çalıştığı kanıtlanmı
 - [x] Graylog üzerinde sistem izleme panosu (dashboard) kurulması
 - [ ] Üst menü/sekme yapısının DevExtreme'e taşınması (isteğe bağlı, henüz yapılmadı)
 - [x] "Şifremi Unuttum" akışı + e-posta ile şifre sıfırlama (gerçek mail testiyle doğrulandı)
-- [~] Çoklu dil desteği — altyapı + üst menü çevrildi, geri kalan ekranlar kademeli sürecek
+- [x] Çoklu dil desteği — tüm ekranlar İngilizce/Türkçe arasında geçiş yapabiliyor
 - [ ] Arayüz tasarımında "yapay zeka hissi"ni kırma çalışması (özellikle font seçimi)

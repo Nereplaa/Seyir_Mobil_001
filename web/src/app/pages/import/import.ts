@@ -1,5 +1,6 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { DxDataGridModule, DxButtonModule } from 'devextreme-angular';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { AracHareketApi } from '../../services/arac-hareket-api';
 import { Bildirim } from '../../services/bildirim';
 import { ImportDosyaKoprusu } from '../../services/import-dosya-koprusu';
@@ -11,14 +12,13 @@ import { dosyaIndir } from '../../utils/dosya-indir';
 // ImportSatiriSonucDto'ya, sadece client'ta anlam ifade eden `cakismaAksiyonu` alanini ekler.
 type GridSatiri = ImportSatiriSonucDto & { cakismaAksiyonu: string };
 
-const CAKISMA_AKSIYON_SECENEKLERI = [
-  { deger: 'UzerineYaz', metin: 'Üzerine Yaz' },
-  { deger: 'Atla', metin: 'Atla' },
-];
+// Sadece IC DEGERLER (backend/karsilastirma icin) - GORUNEN metinler ceviri iceriyor, bkz.
+// cakismaAksiyonSecenekleri().
+const CAKISMA_AKSIYON_DEGERLERI = ['UzerineYaz', 'Atla'] as const;
 
 @Component({
   selector: 'app-import',
-  imports: [DxDataGridModule, DxButtonModule],
+  imports: [DxDataGridModule, DxButtonModule, TranslatePipe],
   templateUrl: './import.html',
   styleUrl: './import.css',
 })
@@ -26,6 +26,14 @@ export class Import implements OnInit {
   private readonly api = inject(AracHareketApi);
   private readonly bildirim = inject(Bildirim);
   private readonly dosyaKoprusu = inject(ImportDosyaKoprusu);
+  private readonly translate = inject(TranslateService);
+
+  private cakismaAksiyonSecenekleri() {
+    return CAKISMA_AKSIYON_DEGERLERI.map((deger) => ({
+      deger,
+      metin: this.translate.instant(deger === 'UzerineYaz' ? 'import.aksiyonUzerineYaz' : 'import.aksiyonAtla'),
+    }));
+  }
 
   satirlar = signal<GridSatiri[]>([]);
   yukleniyor = signal(false);
@@ -39,121 +47,132 @@ export class Import implements OnInit {
   private debounceTimer?: ReturnType<typeof setTimeout>;
   private dogrulamaSurumu = 0;
 
-  readonly columns = [
-    // Sabit width yerine minWidth: grid'in [columnAutoWidth]="true" ayarı sayesinde 3 haneli
-    // ("999") satır numaralarına varsayılan olarak yetiyor, 4-5 haneli (10000+) içerik gelirse
-    // sabit genişlik ONU KESMEZ, otomatik büyüyor (2026-08-10 geri bildirimi).
-    { dataField: 'satirNo', caption: '#', minWidth: 60, allowEditing: false, cssClass: 'col-numeric' },
-    {
-      dataField: 'aracPlaka',
-      caption: 'Plaka',
-      width: 130,
-      cellTemplate: (cellElement: HTMLElement, cellInfo: { value?: string }) => {
-        const span = document.createElement('span');
-        span.className = 'plaka-chip';
-        span.textContent = cellInfo.value ?? '';
-        cellElement.appendChild(span);
-      },
-    },
-    {
-      dataField: 'veriTarihi',
-      caption: 'Tarih',
-      width: 130,
-      dataType: 'date' as const,
-      format: 'dd.MM.yyyy',
-      cssClass: 'col-numeric',
-      // Elle yazim yerine takvimden secim zorunlu kilinir - kullanicilar tarihi farkli
-      // siralarda (gun/ay/yil) ya da farkli ayraclarla (./ -) yazabiliyordu, bu da import'a
-      // gecersiz/yanlis-yorumlanan tarihler olarak dusuyordu (gercek kullanici geri bildirimi).
-      editorOptions: { calendarOptions: { showTodayButton: true } },
-      // dataType 'date' oldugu icin DevExtreme buraya artik ISO STRING degil bir Date nesnesi
-      // (ya da gecersiz/bos deger icin null/undefined) veriyor - eskiden burada satirin ham
-      // string'i (formatTarih'in bekledigi) geliyordu, tip uyusmazligi TUM grid'in coken bir
-      // exception'a (`iso.split is not a function`) yol acip hicbir satirin gorunmemesine
-      // sebep oluyordu (gercek kullanici raporuyla bulundu).
-      customizeText: (c: { value?: Date | null }) => (c.value ? this.formatTarihDate(c.value) : 'Geçersiz'),
-    },
-    { dataField: 'hiz', caption: 'Hız', width: 80, dataType: 'number' as const, cssClass: 'col-numeric' },
-    {
-      dataField: 'kmSayaci',
-      caption: 'Km Sayacı',
-      width: 120,
-      dataType: 'number' as const,
-      format: '#,##0.00',
-      cssClass: 'col-numeric',
-    },
-    {
-      caption: 'Durum',
-      // 190px'te "Çakışma — karar bekliyor" gibi en uzun durum metni çipin kenarından taşıp
-      // yan sütuna değiyordu (gerçek kullanıcı geri bildirimi, 2026-08-07) - 230'a çıkarıldı.
-      width: 230,
-      allowEditing: false,
-      calculateCellValue: (r: GridSatiri) => this.durumMetni(r),
-      // dx-data-grid cell'leri bu grid'de "cell" editing modunda olsa da (allowEditing: false
-      // burada) cellTemplate hala salt-okunur bir gorunum olarak destekleniyor - Durum artik
-      // duz metin degil, renkli bir "cip" (nokta + etiket) olarak gosteriliyor (erisilebilirlik
-      // icin: renk TEK BASINA anlam tasimiyor, etiket metni de hep goruluyor).
-      cellTemplate: (cellElement: HTMLElement, cellInfo: { value?: string; data?: GridSatiri }) => {
-        const sinif = cellInfo.data ? this.durumSinifi(cellInfo.data) : 'ok';
-        const span = document.createElement('span');
-        span.className = `chip chip-${sinif}`;
-        span.textContent = cellInfo.value ?? '';
-        cellElement.appendChild(span);
-      },
-    },
-    {
-      dataField: 'cakismaAksiyonu',
-      caption: 'Çakışma Aksiyonu',
-      width: 150,
-      // Cakisma OLMAYAN bir satirda "Uzerine Yaz" anlamsiz (uzerine yazilacak bir kayit yok) -
-      // ama kullanici yine de gozden gecirip GONULLU olarak "Atla" diyebilmeli (kullanici
-      // istegi, 2026-08-07: "cakisma olmasa bile insan bakip karar verebilmeli"). Bos deger her
-      // iki durumda da "normal ice aktar, aksiyon yok" anlamina geliyor - allowClearing ile
-      // kullanici fikrini degistirip bosa donebiliyor.
-      // NOT: lookup.dataSource'u SATIRA GORE degisen bir fonksiyon yapmak (DevExtreme'in
-      // "bagimli/cascading lookup" deseni gibi gorunuyor) burada DENENDI ve REDDEDILDI - grid,
-      // hucre GORUNTUSUNU (value->text) cozerken bu fonksiyonu satir baglami OLMADAN, TEK SEFER
-      // bos {} ile cagirip TUM sutun icin ortak bir valueMap olusturuyor (bkz.
-      // node_modules/devextreme/cjs/__internal/grids/grid_core/columns_controller/
-      // m_columns_controller.js, lookup.update()) - sonuc: 'UzerineYaz' degeri o global map'te hic
-      // yer almiyor, secilse bile hucrede BOS gorunuyordu (gercekten test edilip goruldu). Bu
-      // yuzden lookup SABIT/TAM listeyi tutuyor (iki degerin de GORUNTUSU her zaman dogru cozulsun
-      // diye), satira gore KISITLAMA ise asagidaki onEditorPreparing ile SADECE DUZENLEME
-      // ANINDAKI editorun secenek listesinde yapiliyor.
-      lookup: {
-        dataSource: CAKISMA_AKSIYON_SECENEKLERI,
-        valueExpr: 'deger',
-        displayExpr: 'metin',
-        allowClearing: true,
-      },
-      // Bos hucre "burada bir seyler yapilmali mi belli degil" hissi veriyordu (gercek kullanici
-      // geri bildirimi, 2026-08-07: "kullanicinin oraya birsey secmesini anlamasi gerek") -
-      // deger secilmemisse, cakisma GERCEKTEN varsa (karar sart) tikla-secilebilir gorunumlu
-      // kesikli bir "Seciniz" etiketi, cakisma yoksa (secim opsiyonel) sadece soluk bir "—"
-      // gosteriliyor - boylece zorunlu/opsiyonel ayrimi da gorsel olarak belli oluyor.
-      cellTemplate: (cellElement: HTMLElement, cellInfo: { value?: string; data?: GridSatiri }) => {
-        const secili = CAKISMA_AKSIYON_SECENEKLERI.find((o) => o.deger === cellInfo.value);
-        const span = document.createElement('span');
-        if (secili) {
+  // Kolon basliklari/lookup metinleri ceviri iceriyor - dil degisince yeniden kurulmasi
+  // gerekiyor (bkz. constructor'daki onLangChange abonesi), bu yuzden sabit dizi degil signal.
+  readonly columns = signal(this.kolonlariKur());
+
+  private kolonlariKur() {
+    return [
+      // Sabit width yerine minWidth: grid'in [columnAutoWidth]="true" ayarı sayesinde 3 haneli
+      // ("999") satır numaralarına varsayılan olarak yetiyor, 4-5 haneli (10000+) içerik gelirse
+      // sabit genişlik ONU KESMEZ, otomatik büyüyor (2026-08-10 geri bildirimi).
+      { dataField: 'satirNo', caption: '#', minWidth: 60, allowEditing: false, cssClass: 'col-numeric' },
+      {
+        dataField: 'aracPlaka',
+        caption: this.translate.instant('import.kolonPlaka'),
+        width: 130,
+        cellTemplate: (cellElement: HTMLElement, cellInfo: { value?: string }) => {
+          const span = document.createElement('span');
           span.className = 'plaka-chip';
-          span.textContent = secili.metin;
-        } else if (cellInfo.data?.cakismaVarMi) {
-          span.className = 'aksiyon-placeholder aksiyon-placeholder-required';
-          span.textContent = 'Seçiniz ▾';
-        } else {
-          span.className = 'aksiyon-placeholder';
-          span.textContent = '—';
-        }
-        cellElement.appendChild(span);
+          span.textContent = cellInfo.value ?? '';
+          cellElement.appendChild(span);
+        },
       },
-    },
-    {
-      caption: 'Hata',
-      minWidth: 220,
-      allowEditing: false,
-      calculateCellValue: (r: GridSatiri) => r.hatalar.join(' · '),
-    },
-  ];
+      {
+        dataField: 'veriTarihi',
+        caption: this.translate.instant('import.kolonTarih'),
+        width: 130,
+        dataType: 'date' as const,
+        format: 'dd.MM.yyyy',
+        cssClass: 'col-numeric',
+        // Elle yazim yerine takvimden secim zorunlu kilinir - kullanicilar tarihi farkli
+        // siralarda (gun/ay/yil) ya da farkli ayraclarla (./ -) yazabiliyordu, bu da import'a
+        // gecersiz/yanlis-yorumlanan tarihler olarak dusuyordu (gercek kullanici geri bildirimi).
+        editorOptions: { calendarOptions: { showTodayButton: true } },
+        // dataType 'date' oldugu icin DevExtreme buraya artik ISO STRING degil bir Date nesnesi
+        // (ya da gecersiz/bos deger icin null/undefined) veriyor - eskiden burada satirin ham
+        // string'i (formatTarih'in bekledigi) geliyordu, tip uyusmazligi TUM grid'in coken bir
+        // exception'a (`iso.split is not a function`) yol acip hicbir satirin gorunmemesine
+        // sebep oluyordu (gercek kullanici raporuyla bulundu).
+        customizeText: (c: { value?: Date | null }) =>
+          c.value ? this.formatTarihDate(c.value) : this.translate.instant('import.gecersizTarih'),
+      },
+      { dataField: 'hiz', caption: this.translate.instant('import.kolonHiz'), width: 80, dataType: 'number' as const, cssClass: 'col-numeric' },
+      {
+        dataField: 'kmSayaci',
+        caption: this.translate.instant('import.kolonKmSayaci'),
+        width: 120,
+        dataType: 'number' as const,
+        format: '#,##0.00',
+        cssClass: 'col-numeric',
+      },
+      {
+        caption: this.translate.instant('import.kolonDurum'),
+        // 190px'te "Çakışma — karar bekliyor" gibi en uzun durum metni çipin kenarından taşıp
+        // yan sütuna değiyordu (gerçek kullanıcı geri bildirimi, 2026-08-07) - 230'a çıkarıldı.
+        width: 230,
+        allowEditing: false,
+        calculateCellValue: (r: GridSatiri) => this.durumMetni(r),
+        // dx-data-grid cell'leri bu grid'de "cell" editing modunda olsa da (allowEditing: false
+        // burada) cellTemplate hala salt-okunur bir gorunum olarak destekleniyor - Durum artik
+        // duz metin degil, renkli bir "cip" (nokta + etiket) olarak gosteriliyor (erisilebilirlik
+        // icin: renk TEK BASINA anlam tasimiyor, etiket metni de hep goruluyor).
+        cellTemplate: (cellElement: HTMLElement, cellInfo: { value?: string; data?: GridSatiri }) => {
+          const sinif = cellInfo.data ? this.durumSinifi(cellInfo.data) : 'ok';
+          const span = document.createElement('span');
+          span.className = `chip chip-${sinif}`;
+          span.textContent = cellInfo.value ?? '';
+          cellElement.appendChild(span);
+        },
+      },
+      {
+        dataField: 'cakismaAksiyonu',
+        caption: this.translate.instant('import.kolonCakismaAksiyonu'),
+        width: 150,
+        // Cakisma OLMAYAN bir satirda "Uzerine Yaz" anlamsiz (uzerine yazilacak bir kayit yok) -
+        // ama kullanici yine de gozden gecirip GONULLU olarak "Atla" diyebilmeli (kullanici
+        // istegi, 2026-08-07: "cakisma olmasa bile insan bakip karar verebilmeli"). Bos deger her
+        // iki durumda da "normal ice aktar, aksiyon yok" anlamina geliyor - allowClearing ile
+        // kullanici fikrini degistirip bosa donebiliyor.
+        // NOT: lookup.dataSource'u SATIRA GORE degisen bir fonksiyon yapmak (DevExtreme'in
+        // "bagimli/cascading lookup" deseni gibi gorunuyor) burada DENENDI ve REDDEDILDI - grid,
+        // hucre GORUNTUSUNU (value->text) cozerken bu fonksiyonu satir baglami OLMADAN, TEK SEFER
+        // bos {} ile cagirip TUM sutun icin ortak bir valueMap olusturuyor (bkz.
+        // node_modules/devextreme/cjs/__internal/grids/grid_core/columns_controller/
+        // m_columns_controller.js, lookup.update()) - sonuc: 'UzerineYaz' degeri o global map'te hic
+        // yer almiyor, secilse bile hucrede BOS gorunuyordu (gercekten test edilip goruldu). Bu
+        // yuzden lookup SABIT/TAM listeyi tutuyor (iki degerin de GORUNTUSU her zaman dogru cozulsun
+        // diye), satira gore KISITLAMA ise asagidaki onEditorPreparing ile SADECE DUZENLEME
+        // ANINDAKI editorun secenek listesinde yapiliyor.
+        lookup: {
+          dataSource: this.cakismaAksiyonSecenekleri(),
+          valueExpr: 'deger',
+          displayExpr: 'metin',
+          allowClearing: true,
+        },
+        // Bos hucre "burada bir seyler yapilmali mi belli degil" hissi veriyordu (gercek kullanici
+        // geri bildirimi, 2026-08-07: "kullanicinin oraya birsey secmesini anlamasi gerek") -
+        // deger secilmemisse, cakisma GERCEKTEN varsa (karar sart) tikla-secilebilir gorunumlu
+        // kesikli bir "Seciniz" etiketi, cakisma yoksa (secim opsiyonel) sadece soluk bir "—"
+        // gosteriliyor - boylece zorunlu/opsiyonel ayrimi da gorsel olarak belli oluyor.
+        cellTemplate: (cellElement: HTMLElement, cellInfo: { value?: string; data?: GridSatiri }) => {
+          const secili = this.cakismaAksiyonSecenekleri().find((o) => o.deger === cellInfo.value);
+          const span = document.createElement('span');
+          if (secili) {
+            span.className = 'plaka-chip';
+            span.textContent = secili.metin;
+          } else if (cellInfo.data?.cakismaVarMi) {
+            span.className = 'aksiyon-placeholder aksiyon-placeholder-required';
+            span.textContent = this.translate.instant('import.seciniz');
+          } else {
+            span.className = 'aksiyon-placeholder';
+            span.textContent = '—';
+          }
+          cellElement.appendChild(span);
+        },
+      },
+      {
+        caption: this.translate.instant('import.kolonHata'),
+        minWidth: 220,
+        allowEditing: false,
+        calculateCellValue: (r: GridSatiri) => r.hatalar.join(' · '),
+      },
+    ];
+  }
+
+  constructor() {
+    this.translate.onLangChange.subscribe(() => this.columns.set(this.kolonlariKur()));
+  }
 
   toplamSatir = computed(() => this.satirlar().length);
   hepsiGecerliMi = computed(
@@ -190,21 +209,21 @@ export class Import implements OnInit {
 
   durumMetni(s: GridSatiri): string {
     if (s.cakismaAksiyonu === 'Atla') {
-      return 'Atlanacak';
+      return this.translate.instant('import.durumAtlanacak');
     }
     if (s.hatalar.length > 0) {
-      return 'Hata';
+      return this.translate.instant('import.durumHata');
     }
     if (s.cakismaVarMi && !s.cakismaAksiyonu) {
-      return 'Çakışma — karar bekliyor';
+      return this.translate.instant('import.durumCakismaBekliyor');
     }
     if (s.cakismaVarMi) {
-      return 'Üzerine yazılacak';
+      return this.translate.instant('import.durumUzerineYazilacak');
     }
     if (s.yeniAracMi) {
-      return 'Yeni araç';
+      return this.translate.instant('import.durumYeniArac');
     }
-    return 'Hazır';
+    return this.translate.instant('import.durumHazir');
   }
 
   // durumMetni ile AYNI durum ayrımını (hata/çakışma-bekliyor/hazır) bir renk sınıfına
@@ -246,9 +265,10 @@ export class Import implements OnInit {
     if (e.dataField !== 'cakismaAksiyonu') {
       return;
     }
+    const secenekler = this.cakismaAksiyonSecenekleri();
     e.editorOptions.dataSource = e.row?.data?.cakismaVarMi
-      ? CAKISMA_AKSIYON_SECENEKLERI
-      : CAKISMA_AKSIYON_SECENEKLERI.filter((o) => o.deger === 'Atla');
+      ? secenekler
+      : secenekler.filter((o) => o.deger === 'Atla');
   }
 
   // Dosya secimi icin DevExtreme'in dx-file-uploader'i YERINE gizli bir native <input type=file>
@@ -284,7 +304,7 @@ export class Import implements OnInit {
         if (oturumHatasiMi(err)) {
           return;
         }
-        this.bildirim.hata(`Dosya okunamadı.\n\nHata: ${err.message}`);
+        this.bildirim.hata(`${this.translate.instant('import.hataDosyaOkunamadi')}\n\nHata: ${err.message}`);
       },
     });
   }
@@ -304,7 +324,7 @@ export class Import implements OnInit {
         if (oturumHatasiMi(err)) {
           return;
         }
-        this.bildirim.hata(`Şablon indirilemedi.\n\nHata: ${err.message}`);
+        this.bildirim.hata(`${this.translate.instant('import.hataSablonIndirilemedi')}\n\nHata: ${err.message}`);
       },
     });
   }
@@ -356,26 +376,26 @@ export class Import implements OnInit {
           yanit.satirlar.map((s) => ({ ...s, cakismaAksiyonu: eskiAksiyonlar.get(s.satirNo) ?? '' }))
         );
         this.yukleniyor.set(false);
-        this.bildirim.bilgi('Yeniden doğrulandı.');
+        this.bildirim.bilgi(this.translate.instant('import.yenidenDogrulandi'));
       },
       error: (err) => {
         if (buSurum !== this.dogrulamaSurumu || oturumHatasiMi(err)) {
           return;
         }
         this.yukleniyor.set(false);
-        this.bildirim.hata(`Yeniden doğrulanamadı.\n\nHata: ${err.message}`);
+        this.bildirim.hata(`${this.translate.instant('import.hataYenidenDogrulanamadi')}\n\nHata: ${err.message}`);
       },
     });
   }
 
   async iceAktar(): Promise<void> {
     if (!this.hepsiGecerliMi()) {
-      this.bildirim.bilgi(
-        'Tüm satırlar geçerli olmadan içe aktarılamaz. Hatalı veya karar bekleyen satırları düzeltip "Yeniden Doğrula"ya basın.'
-      );
+      this.bildirim.bilgi(this.translate.instant('import.gecersizSatirUyarisi'));
       return;
     }
-    const onay = await this.bildirim.onayla(`${this.toplamSatir()} satır içe aktarılacak. Devam edilsin mi?`);
+    const onay = await this.bildirim.onayla(
+      this.translate.instant('import.iceAktarOnaySorusu', { sayi: this.toplamSatir() })
+    );
     if (!onay) {
       return;
     }
@@ -396,7 +416,11 @@ export class Import implements OnInit {
       next: (sonuc) => {
         this.onaylaniyor.set(false);
         this.bildirim.bilgi(
-          `İçe aktarma tamamlandı: ${sonuc.eklenenSayisi} eklendi, ${sonuc.guncellenenSayisi} güncellendi, ${sonuc.atlananSayisi} atlandı.`
+          this.translate.instant('import.iceAktarmaTamamlandi', {
+            eklenen: sonuc.eklenenSayisi,
+            guncellenen: sonuc.guncellenenSayisi,
+            atlanan: sonuc.atlananSayisi,
+          })
         );
         this.satirlar.set([]);
       },
@@ -405,7 +429,9 @@ export class Import implements OnInit {
         if (oturumHatasiMi(err)) {
           return;
         }
-        this.bildirim.hata(`İçe aktarılamadı.\n\nHata: ${err.error?.message ?? err.message}`);
+        this.bildirim.hata(
+          `${this.translate.instant('import.hataIceAktarilamadi')}\n\nHata: ${err.error?.message ?? err.message}`
+        );
       },
     });
   }

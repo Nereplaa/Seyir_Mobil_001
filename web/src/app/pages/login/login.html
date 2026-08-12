@@ -7,7 +7,7 @@
         <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4" />
         <path d="M15.5 8.5 L11 11 L8.5 15.5 L13 13 Z" fill="currentColor" />
       </svg>
-      Seyir Mobil
+      {{ 'authOrtak.marka' | translate }}
     </div>
 
     <div class="login-route-wrap">
@@ -48,20 +48,20 @@
     </div>
 
     <div class="login-telemetry">
-      <div><strong>42</strong>araç · aktif filo</div>
-      <div><strong>2 dk</strong>önce senkron</div>
+      <div><strong>42</strong>{{ 'authOrtak.telemetriFilo' | translate }}</div>
+      <div><strong>2 dk</strong>{{ 'authOrtak.telemetriSenkron' | translate }}</div>
     </div>
   </div>
 
   <!-- Sağ panel: giriş formu -->
   <div class="login-form">
     <div>
-      <h2>Seyir Mobil'e Giriş Yap</h2>
-      <p class="login-form-sub">Araç ve rota kayıtlarına erişmek için oturum aç.</p>
+      <h2>{{ 'login.baslik' | translate }}</h2>
+      <p class="login-form-sub">{{ 'login.altBaslik' | translate }}</p>
     </div>
 
     <div class="field">
-      <label for="username">Kullanıcı Adı</label>
+      <label for="username">{{ 'login.kullaniciAdi' | translate }}</label>
       <dx-text-box
         id="username"
         [value]="username()"
@@ -71,7 +71,7 @@
     </div>
 
     <div class="field">
-      <label for="password">Şifre</label>
+      <label for="password">{{ 'login.sifre' | translate }}</label>
       <dx-text-box
         id="password"
         mode="password"
@@ -87,7 +87,7 @@
 
     <dx-button
       class="login-buton"
-      [text]="girisYapiliyor() ? 'Giriş yapılıyor...' : 'Giriş Yap'"
+      [text]="(girisYapiliyor() ? 'login.girisYapiliyor' : 'login.girisYap') | translate"
       type="default"
       width="100%"
       [disabled]="girisYapiliyor()"
@@ -95,7 +95,7 @@
     ></dx-button>
 
     <p class="login-form-foot">
-      <a routerLink="/sifremi-unuttum">Şifremi unuttum</a> · Erişim sorunu için sistem yöneticinize başvurun.
+      <a routerLink="/sifremi-unuttum">{{ 'login.sifremiUnuttum' | translate }}</a> · {{ 'login.erisimSorunu' | translate }}
     </p>
   </div>
 </div>

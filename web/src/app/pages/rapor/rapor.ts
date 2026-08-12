@@ -15,6 +15,7 @@ import {
   DxButtonModule,
   DxDataGridModule,
 } from 'devextreme-angular';
+import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { exportDataGrid } from 'devextreme/excel_exporter';
 import { Workbook } from 'exceljs';
 import { AracHareketApi } from '../../services/arac-hareket-api';
@@ -62,6 +63,7 @@ function isoToTarih(iso: string): Date {
     DxCheckBoxModule,
     DxButtonModule,
     DxDataGridModule,
+    TranslatePipe,
   ],
   templateUrl: './rapor.html',
   styleUrl: './rapor.css',
@@ -69,6 +71,7 @@ function isoToTarih(iso: string): Date {
 export class Rapor implements OnInit, OnDestroy {
   private readonly api = inject(AracHareketApi);
   private readonly bildirim = inject(Bildirim);
+  private readonly translate = inject(TranslateService);
 
   // Alttaki plaka taşma alanının (.plaka-cip-tasma) sağ kenarını "Rapor Oluştur" butonunun sağ
   // kenarıyla hizalamak için field-row'un GERÇEK render genişliğini ölçüyoruz - CSS-only bir
@@ -78,6 +81,13 @@ export class Rapor implements OnInit, OnDestroy {
   @ViewChild('raporFieldRow') private raporFieldRowRef?: ElementRef<HTMLElement>;
   private resizeObserver?: ResizeObserver;
   fieldRowGenislik = signal<number | null>(null);
+
+  constructor() {
+    this.translate.onLangChange.subscribe(() => {
+      this.ozetColumns.set(this.ozetKolonlariKur());
+      this.detayColumns.set(this.detayKolonlariKur());
+    });
+  }
 
   ngAfterViewInit(): void {
     const el = this.raporFieldRowRef?.nativeElement;
@@ -115,71 +125,80 @@ export class Rapor implements OnInit, OnDestroy {
   }
 
   // ---------- DevExtreme DataGrid kolonlari (ozet + detayli rapor) ----------
-  readonly ozetColumns = [
-    {
-      dataField: 'aracPlaka',
-      caption: 'Araç Plakası',
-      cellTemplate: (cellElement: HTMLElement, cellInfo: { value?: string }) => {
-        const span = document.createElement('span');
-        span.className = 'plaka-chip';
-        span.textContent = cellInfo.value ?? '';
-        cellElement.appendChild(span);
-      },
-    },
-    {
-      dataField: 'baslangicKm',
-      caption: 'Başlangıç Km',
-      cssClass: 'col-numeric',
-      customizeText: (cellInfo: { value?: number | null }) =>
-        cellInfo.value == null ? 'Veri yok' : this.formatKm(cellInfo.value),
-    },
-    {
-      dataField: 'bitisKm',
-      caption: 'Bitiş Km',
-      cssClass: 'col-numeric',
-      customizeText: (cellInfo: { value?: number | null }) =>
-        cellInfo.value == null ? 'Veri yok' : this.formatKm(cellInfo.value),
-    },
-    {
-      dataField: 'yapilanKm',
-      caption: 'Yapılan Km',
-      cssClass: 'col-numeric',
-      customizeText: (cellInfo: { value?: number | null }) =>
-        cellInfo.value == null ? 'Veri yok' : this.formatKm(cellInfo.value),
-    },
-  ];
+  // Kolon basliklari ceviri iceriyor - dil degisince yeniden kurulmasi gerekiyor (bkz.
+  // constructor'daki onLangChange abonesi), bu yuzden sabit dizi degil signal.
+  readonly ozetColumns = signal(this.ozetKolonlariKur());
+  readonly detayColumns = signal(this.detayKolonlariKur());
 
-  readonly detayColumns = [
-    {
-      dataField: 'aracPlaka',
-      caption: 'Araç Plaka',
-      cellTemplate: (cellElement: HTMLElement, cellInfo: { value?: string }) => {
-        const span = document.createElement('span');
-        span.className = 'plaka-chip';
-        span.textContent = cellInfo.value ?? '';
-        cellElement.appendChild(span);
+  private ozetKolonlariKur() {
+    return [
+      {
+        dataField: 'aracPlaka',
+        caption: this.translate.instant('rapor.kolonAracPlakasi'),
+        cellTemplate: (cellElement: HTMLElement, cellInfo: { value?: string }) => {
+          const span = document.createElement('span');
+          span.className = 'plaka-chip';
+          span.textContent = cellInfo.value ?? '';
+          cellElement.appendChild(span);
+        },
       },
-    },
-    {
-      dataField: 'veriTarihi',
-      caption: 'Veri Tarihi',
-      cssClass: 'col-numeric',
-      customizeText: (cellInfo: { value?: string }) => (cellInfo.value ? this.formatTarih(cellInfo.value) : ''),
-    },
-    {
-      dataField: 'kmSayaci',
-      caption: 'Km Sayacı',
-      cssClass: 'col-numeric',
-      customizeText: (cellInfo: { value?: number }) => (cellInfo.value == null ? '' : this.formatKm(cellInfo.value)),
-    },
-    {
-      dataField: 'artis',
-      caption: 'Bir Önceki Okumaya Göre Artış',
-      cssClass: 'col-numeric',
-      customizeText: (cellInfo: { value?: number | null }) =>
-        cellInfo.value == null ? '-' : this.formatKm(cellInfo.value),
-    },
-  ];
+      {
+        dataField: 'baslangicKm',
+        caption: this.translate.instant('rapor.kolonBaslangicKm'),
+        cssClass: 'col-numeric',
+        customizeText: (cellInfo: { value?: number | null }) =>
+          cellInfo.value == null ? this.translate.instant('rapor.veriYok') : this.formatKm(cellInfo.value),
+      },
+      {
+        dataField: 'bitisKm',
+        caption: this.translate.instant('rapor.kolonBitisKm'),
+        cssClass: 'col-numeric',
+        customizeText: (cellInfo: { value?: number | null }) =>
+          cellInfo.value == null ? this.translate.instant('rapor.veriYok') : this.formatKm(cellInfo.value),
+      },
+      {
+        dataField: 'yapilanKm',
+        caption: this.translate.instant('rapor.kolonYapilanKm'),
+        cssClass: 'col-numeric',
+        customizeText: (cellInfo: { value?: number | null }) =>
+          cellInfo.value == null ? this.translate.instant('rapor.veriYok') : this.formatKm(cellInfo.value),
+      },
+    ];
+  }
+
+  private detayKolonlariKur() {
+    return [
+      {
+        dataField: 'aracPlaka',
+        caption: this.translate.instant('rapor.kolonAracPlaka'),
+        cellTemplate: (cellElement: HTMLElement, cellInfo: { value?: string }) => {
+          const span = document.createElement('span');
+          span.className = 'plaka-chip';
+          span.textContent = cellInfo.value ?? '';
+          cellElement.appendChild(span);
+        },
+      },
+      {
+        dataField: 'veriTarihi',
+        caption: this.translate.instant('rapor.kolonVeriTarihi'),
+        cssClass: 'col-numeric',
+        customizeText: (cellInfo: { value?: string }) => (cellInfo.value ? this.formatTarih(cellInfo.value) : ''),
+      },
+      {
+        dataField: 'kmSayaci',
+        caption: this.translate.instant('rapor.kolonKmSayaci'),
+        cssClass: 'col-numeric',
+        customizeText: (cellInfo: { value?: number }) => (cellInfo.value == null ? '' : this.formatKm(cellInfo.value)),
+      },
+      {
+        dataField: 'artis',
+        caption: this.translate.instant('rapor.kolonArtis'),
+        cssClass: 'col-numeric',
+        customizeText: (cellInfo: { value?: number | null }) =>
+          cellInfo.value == null ? '-' : this.formatKm(cellInfo.value),
+      },
+    ];
+  }
 
   plakalar = signal<AracPlakaLookupDto[]>([]);
   // Plaka secimi artik dx-tag-box'in KENDI arama+cip mekanizmasi ile yapiliyor - onceki elle
@@ -257,7 +276,7 @@ export class Rapor implements OnInit, OnDestroy {
       next: (plakalar) => this.plakalar.set(plakalar),
       error: (err) => {
         if (!oturumHatasiMi(err)) {
-          this.bildirim.hata(`Araç listesi alınamadı.\n\nHata: ${err.message}`);
+          this.bildirim.hata(`${this.translate.instant('rapor.hataAracListesi')}\n\nHata: ${err.message}`);
         }
       },
     });
@@ -274,7 +293,7 @@ export class Rapor implements OnInit, OnDestroy {
   raporOlustur(): void {
     const plakalar = this.seciliPlakalar();
     this.yukleniyor.set(true);
-    this.statusText.set('Rapor oluşturuluyor...');
+    this.statusText.set(this.translate.instant('rapor.olusturuluyorDurum'));
     this.raporUretildi.set(false);
 
     if (this.detayliRapor) {
@@ -285,7 +304,7 @@ export class Rapor implements OnInit, OnDestroy {
             this.detaySonuclar.set(satirlar);
             this.raporUretildi.set(true);
             this.yukleniyor.set(false);
-            this.statusText.set(`${satirlar.length} okuma için detaylı rapor oluşturuldu.`);
+            this.statusText.set(this.translate.instant('rapor.detayliRaporOlusturuldu', { sayi: satirlar.length }));
           },
           error: (err) => this.raporHatasi(err),
         });
@@ -297,7 +316,7 @@ export class Rapor implements OnInit, OnDestroy {
             this.ozetSonuclar.set(sonuclar);
             this.raporUretildi.set(true);
             this.yukleniyor.set(false);
-            this.statusText.set(`${sonuclar.length} araç için rapor oluşturuldu.`);
+            this.statusText.set(this.translate.instant('rapor.ozetRaporOlusturuldu', { sayi: sonuclar.length }));
           },
           error: (err) => this.raporHatasi(err),
         });
@@ -309,8 +328,8 @@ export class Rapor implements OnInit, OnDestroy {
     if (oturumHatasiMi(err)) {
       return;
     }
-    this.statusText.set('Rapor oluşturulamadı.');
-    this.bildirim.hata(`Rapor oluşturulamadı.\n\nHata: ${err.message}`);
+    this.statusText.set(this.translate.instant('rapor.raporOlusturulamadi'));
+    this.bildirim.hata(`${this.translate.instant('rapor.raporOlusturulamadi')}\n\nHata: ${err.message}`);
   }
 
   // ---------- Excel'e Aktar (DevExtreme dx-data-grid'in kendi export'u, tarayicida ureterek) ----------
@@ -319,11 +338,11 @@ export class Rapor implements OnInit, OnDestroy {
   // (kullanici onayli sadelesme, bkz. AI_NOTES/decisions.md).
 
   onExportingOzet(e: { component: unknown }): void {
-    this.gridDenIndir(e, 'Özet Rapor', 'rapor-ozet.xlsx');
+    this.gridDenIndir(e, this.translate.instant('rapor.sheetOzet'), 'rapor-ozet.xlsx');
   }
 
   onExportingDetay(e: { component: unknown }): void {
-    this.gridDenIndir(e, 'Detaylı Rapor', 'rapor-detay.xlsx');
+    this.gridDenIndir(e, this.translate.instant('rapor.sheetDetay'), 'rapor-detay.xlsx');
   }
 
   private gridDenIndir(e: { component: unknown }, sayfaAdi: string, dosyaAdi: string): void {

@@ -1,8 +1,8 @@
 <section class="panel panel-form">
-  <div class="panel-head"><span class="panel-eyebrow">Yeni Kullanıcı Ekle</span></div>
+  <div class="panel-head"><span class="panel-eyebrow">{{ 'admin.baslikYeniKullanici' | translate }}</span></div>
   <div class="field-row">
     <div class="field">
-      <label for="yeniKullaniciAdi">Kullanıcı Adı</label>
+      <label for="yeniKullaniciAdi">{{ 'admin.kolonKullaniciAdi' | translate }}</label>
       <dx-text-box
         id="yeniKullaniciAdi"
         [value]="yeniKullaniciAdi"
@@ -11,7 +11,7 @@
       ></dx-text-box>
     </div>
     <div class="field">
-      <label for="yeniSifre">Şifre</label>
+      <label for="yeniSifre">{{ 'sifreSifirla.yeniSifre' | translate }}</label>
       <dx-text-box
         id="yeniSifre"
         mode="password"
@@ -21,7 +21,7 @@
       ></dx-text-box>
     </div>
     <div class="field">
-      <label for="yeniEmail">E-posta</label>
+      <label for="yeniEmail">{{ 'admin.kolonEmail' | translate }}</label>
       <dx-text-box
         id="yeniEmail"
         mode="email"
@@ -31,7 +31,7 @@
       ></dx-text-box>
     </div>
     <div class="field">
-      <label for="yeniRol">Rol</label>
+      <label for="yeniRol">{{ 'admin.kolonRol' | translate }}</label>
       <dx-select-box
         id="yeniRol"
         [dataSource]="rolSecenekleri"
@@ -43,7 +43,7 @@
     <div class="field">
       <label>&nbsp;</label>
       <dx-button
-        [text]="ekleniyor() ? 'Ekleniyor…' : 'Ekle'"
+        [text]="(ekleniyor() ? 'admin.ekleniyor' : 'admin.ekle') | translate"
         type="default"
         [disabled]="ekleniyor()"
         (onClick)="ekle()"
@@ -54,10 +54,10 @@
 
 <section class="panel">
   <div class="panel-head">
-    <span class="panel-eyebrow">Kullanıcılar</span>
+    <span class="panel-eyebrow">{{ 'admin.kullanicilar' | translate }}</span>
     <span class="panel-actions">
       <dx-button
-        text="Sil"
+        [text]="'admin.sil' | translate"
         type="danger"
         [disabled]="!seciliKullanici() || kendisiSecilmiMi"
         (onClick)="sil()"
@@ -67,31 +67,26 @@
 
   <dx-data-grid
     [dataSource]="kullanicilar()"
-    [columns]="dataGridColumns"
+    [columns]="dataGridColumns()"
     [showBorders]="true"
     [showColumnLines]="true"
     [showRowLines]="true"
     [rowAlternationEnabled]="true"
     [selection]="{ mode: 'single' }"
-    [searchPanel]="{ visible: true, placeholder: 'Ara...' }"
+    [searchPanel]="{ visible: true, placeholder: ('admin.araPlaceholder' | translate) }"
     (onSelectionChanged)="onSelectionChanged($event)"
   ></dx-data-grid>
 
   <p class="status-text" style="margin-top: 0.75rem">{{ statusText() }}</p>
   @if (kendisiSecilmiMi) {
-    <p class="status-text" style="margin-top: 0.25rem">Kendi hesabını silemezsin.</p>
+    <p class="status-text" style="margin-top: 0.25rem">{{ 'admin.kendiHesabiniSilemezsin' | translate }}</p>
   }
 </section>
 
 <section class="panel">
-  <div class="panel-head"><span class="panel-eyebrow">Log Ekranı</span></div>
-  <p class="status-text">
-    Backend API çağrıları ve web arayüzündeki tüm etkileşimler (tıklamalar, filtre değişiklikleri)
-    Graylog'a kaydediliyor. Ayrıntılı log arama/filtreleme için Graylog'un kendi web arayüzü açılır
-    — Seyir Mobil içinde ayrı bir log ekranı yok, bilinçli bir tercih (tekrar geliştirmek yerine
-    hazır ve güçlü bir arayüz kullanılıyor).
-  </p>
+  <div class="panel-head"><span class="panel-eyebrow">{{ 'admin.logEkrani' | translate }}</span></div>
+  <p class="status-text">{{ 'admin.logAciklama' | translate }}</p>
   <a href="http://localhost:9000" target="_blank" rel="noopener">
-    <dx-button text="Graylog'u Aç ↗" type="normal" stylingMode="outlined"></dx-button>
+    <dx-button [text]="('admin.graylogAc' | translate) + ' ↗'" type="normal" stylingMode="outlined"></dx-button>
   </a>
 </section>
