@@ -1,4 +1,4 @@
-import { Service, inject } from '@angular/core';
+import { Service, inject, Injector } from '@angular/core';
 import { TranslateService } from '@ngx-translate/core';
 import Swal from 'sweetalert2';
 
@@ -6,9 +6,22 @@ import Swal from 'sweetalert2';
 // 2026-08-05 toplanti) - SweetAlert2 ile tutarli, DevExtreme temasiyla uyumlu bir gorunum.
 // Baslik/buton metinleri i18n'li (2026-08-12'de tasindi) - `mesaj` parametresi caginin kendi
 // sorumlulugu, cagiran taraf translate.instant() ile cevrilmis bir metin gecirmeli.
+//
+// TranslateService constructor'da DEGIL, Injector uzerinden TEMBEL (lazy) aliniyor - gercek bir
+// dongusel bagimlilik (NG0200) yasandi (2026-08-12): authInterceptor HER HTTP istegi icin
+// Bildirim'i inject ediyor, TranslateService de kendi ceviri dosyasini yuklerken HttpClient
+// kullaniyor (bu istek de interceptor'dan geciyor) - Bildirim constructor'da dogrudan
+// TranslateService isteseydi, TranslateService HENUZ KENDI OLUSTURULMASINI BITIRMEDEN tekrar
+// istenmis oluyordu (Dil -> TranslateService -> [http loader] -> interceptor -> Bildirim ->
+// TranslateService dongusu). Injector.get() cagrisi ilk gercek kullanima (hata()/bilgi() vb.
+// cagrildigi ana) ertelendigi icin o noktada TranslateService zaten tam kurulu oluyor, dongu
+// kirilmis oluyor.
 @Service()
 export class Bildirim {
-  private readonly translate = inject(TranslateService);
+  private readonly injector = inject(Injector);
+  private get translate(): TranslateService {
+    return this.injector.get(TranslateService);
+  }
 
   hata(mesaj: string): void {
     Swal.fire({
