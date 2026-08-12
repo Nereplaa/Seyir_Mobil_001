@@ -565,6 +565,20 @@ ediyor.
 
 ---
 
+## 2026-08-12 13:51 — Çoklu Dil Desteği Backend'e de Yayıldı, Bir Oturum Açma Sorunu Giderildi
+
+Bir önceki adımda tüm ekranlara yayılan çoklu dil desteği test edilirken gerçek bir hata ortaya
+çıktı: uygulama açılışında bir bağımlılık çakışması nedeniyle hem çeviriler yüklenemiyor hem de
+giriş yapılamıyordu. Kök neden bulunup düzeltildi, sistem yeniden test edilip doğrulandı.
+
+Ardından, içe aktarma ekranındaki doğrulama hata mesajlarının (örn. "kilometre sayacı şu değerden
+büyük olmalı" gibi satır bazlı uyarılar) İngilizce arayüzde bile Türkçe kaldığı fark edildi — bu
+mesajlar sunucu tarafında üretiliyordu ve önceki tur sadece arayüz metinlerini kapsıyordu. Bu
+eksik giderildi: artık sunucu tarafındaki tüm doğrulama ve hata mesajları da seçili dile göre
+(Türkçe/İngilizce) geliyor — şifre sıfırlama e-postasının içeriği dahil.
+
+---
+
 ## 🔜 Sıradaki Adımlar
 
 - [x] Web istemcisinin eklenmesi (aynı backend API üzerinden)

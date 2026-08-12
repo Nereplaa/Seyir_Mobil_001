@@ -163,7 +163,7 @@ using (var seedScope = app.Services.CreateScope())
 // okumasi bulunur, farklari "yapilan km" olarak donulur. Filtreleme/siralama EF Core LINQ
 // uzerinden SQL Server'a birakiliyor (SELECT TOP 1 ... ORDER BY) - butun okumalari C#'a
 // cekip bellekte aramak yerine, sadece 2 satir istemciye donuyor.
-app.MapGet("/api/arac-hareketleri/rapor", async (string plaka, DateOnly baslangic, DateOnly bitis, SeyirMobilDbContext db) =>
+app.MapGet("/api/arac-hareketleri/rapor", async (string plaka, DateOnly baslangic, DateOnly bitis, SeyirMobilDbContext db, HttpRequest httpRequest) =>
 {
     var baslangicKayit = await db.AracHareketleri
         .Where(h => h.AracPlaka == plaka && h.VeriTarihi >= baslangic)
@@ -177,7 +177,7 @@ app.MapGet("/api/arac-hareketleri/rapor", async (string plaka, DateOnly baslangi
 
     if (baslangicKayit is null || bitisKayit is null)
     {
-        return Results.NotFound(new { message = "Bu plaka ve tarih aralığında veri bulunamadı." });
+        return Results.NotFound(new { message = Loc.T(Loc.DilKodu(httpRequest), "veriBulunamadi") });
     }
 
     return Results.Ok(new
@@ -231,18 +231,20 @@ app.MapGet("/api/arac-hareketleri/sinirlar", async (string plaka, DateOnly tarih
 // Yeni bir arac hareketi (okuma) ekler - km sayacinin, ayni plakanin en yakin onceki/sonraki
 // okumalari arasinda (KESIN sinirlarla, esit degil) kalmasi sunucu tarafinda da dogrulanir -
 // client tarafindaki NumericUpDown sinirlamasi sadece UX kolayligi, gercek kaynak burasi.
-app.MapPost("/api/arac-hareketleri", async (CreateAracHareketRequest request, SeyirMobilDbContext db) =>
+app.MapPost("/api/arac-hareketleri", async (CreateAracHareketRequest request, SeyirMobilDbContext db, HttpRequest httpRequest) =>
 {
+    var dil = Loc.DilKodu(httpRequest);
+
     if (request.Hiz < 0 || request.Hiz > 300)
     {
-        return Results.BadRequest(new { message = "Hız 0-300 aralığında olmalı." });
+        return Results.BadRequest(new { message = Loc.T(dil, "hizAraligi") });
     }
 
     var ayniTarihVarMi = await db.AracHareketleri
         .AnyAsync(h => h.AracPlaka == request.AracPlaka && h.VeriTarihi == request.VeriTarihi);
     if (ayniTarihVarMi)
     {
-        return Results.BadRequest(new { message = "Bu plaka için bu tarihte zaten bir kayıt var." });
+        return Results.BadRequest(new { message = Loc.T(dil, "ayniTarihKaydiVar") });
     }
 
     var onceki = await db.AracHareketleri
@@ -259,19 +261,19 @@ app.MapPost("/api/arac-hareketleri", async (CreateAracHareketRequest request, Se
     {
         return Results.BadRequest(new
         {
-            message = $"Km sayacı, {onceki.VeriTarihi:dd.MM.yyyy} tarihli {onceki.KmSayaci:N2} km değerinden büyük olmalı."
+            message = Loc.T(dil, "kmBuyukOlmali", Loc.Tarih(dil, onceki.VeriTarihi), onceki.KmSayaci)
         });
     }
     if (sonraki is not null && request.KmSayaci >= sonraki.KmSayaci)
     {
         return Results.BadRequest(new
         {
-            message = $"Km sayacı, {sonraki.VeriTarihi:dd.MM.yyyy} tarihli {sonraki.KmSayaci:N2} km değerinden küçük olmalı."
+            message = Loc.T(dil, "kmKucukOlmali", Loc.Tarih(dil, sonraki.VeriTarihi), sonraki.KmSayaci)
         });
     }
     if (request.KmSayaci < 0)
     {
-        return Results.BadRequest(new { message = "Km sayacı negatif olamaz." });
+        return Results.BadRequest(new { message = Loc.T(dil, "kmNegatifOlamaz") });
     }
 
     var hareket = new AracHareket
@@ -326,8 +328,9 @@ app.MapGet("/api/arac-hareketleri/plakalar", async (SeyirMobilDbContext db) =>
 
 // Dosya yuklenince: parse + tam dogrulama TEK adimda. Sonuc, hem web hem masaustunun
 // duzenlenebilir bir onizleme grid'inde gosterdigi ayni model (ImportSatiriSonuc).
-app.MapPost("/api/arac-hareketleri/import-onizleme", async (IFormFile dosya, SeyirMobilDbContext db) =>
+app.MapPost("/api/arac-hareketleri/import-onizleme", async (IFormFile dosya, SeyirMobilDbContext db, HttpRequest httpRequest) =>
 {
+    var dil = Loc.DilKodu(httpRequest);
     string[] beklenenBasliklar = ["AracPlaka", "VeriTarihi", "Hiz", "KmSayaci"];
 
     using var stream = dosya.OpenReadStream();
@@ -347,10 +350,8 @@ app.MapPost("/api/arac-hareketleri/import-onizleme", async (IFormFile dosya, Sey
 
     if (!basliklarEslesiyorMu)
     {
-        var mesaj = $"Bu dosyanın sütun başlıkları beklenen formatla eşleşmiyor. " +
-            $"Beklenen: {string.Join(", ", beklenenBasliklar)}. " +
-            $"Bulunan: {string.Join(", ", bulunanBasliklar.Select(b => string.IsNullOrWhiteSpace(b) ? "(boş)" : b))}. " +
-            "Aşağıdaki \"Şablon İndir\" ile doğru formatta bir dosya indirip kullanabilirsiniz.";
+        var bulunanGosterim = string.Join(", ", bulunanBasliklar.Select(b => string.IsNullOrWhiteSpace(b) ? Loc.T(dil, "bos") : b));
+        var mesaj = Loc.T(dil, "basliklarEslesmiyor", string.Join(", ", beklenenBasliklar), bulunanGosterim);
         return Results.Ok(new ImportOnizlemeYaniti([], mesaj));
     }
 
@@ -372,7 +373,7 @@ app.MapPost("/api/arac-hareketleri/import-onizleme", async (IFormFile dosya, Sey
         hamSatirlar.Add(new ImportHamSatir(satirNo, plaka, tarihStr ?? "", hiz, km));
         satirNo++;
     }
-    return Results.Ok(new ImportOnizlemeYaniti(await ImportSatirlariDogrulaAsync(hamSatirlar, db)));
+    return Results.Ok(new ImportOnizlemeYaniti(await ImportSatirlariDogrulaAsync(hamSatirlar, db, dil)));
 })
 .WithName("ImportOnizleme")
 .RequireAuthorization()
@@ -401,8 +402,8 @@ app.MapGet("/api/arac-hareketleri/import-sablon", () =>
 
 // Kullanici onizleme grid'inde bir hucreyi duzenledikten sonra ("Yeniden Dogrula" butonu) -
 // dosyayi tekrar yuklemeden, sadece degisen veriyi AYNI dogrulama fonksiyonundan tekrar gecirir.
-app.MapPost("/api/arac-hareketleri/import-yeniden-dogrula", async (ImportYenidenDogrulaRequest request, SeyirMobilDbContext db) =>
-    Results.Ok(new ImportOnizlemeYaniti(await ImportSatirlariDogrulaAsync(request.Satirlar, db))))
+app.MapPost("/api/arac-hareketleri/import-yeniden-dogrula", async (ImportYenidenDogrulaRequest request, SeyirMobilDbContext db, HttpRequest httpRequest) =>
+    Results.Ok(new ImportOnizlemeYaniti(await ImportSatirlariDogrulaAsync(request.Satirlar, db, Loc.DilKodu(httpRequest)))))
 .WithName("ImportYenidenDogrula")
 .RequireAuthorization();
 
@@ -411,12 +412,13 @@ app.MapPost("/api/arac-hareketleri/import-yeniden-dogrula", async (ImportYeniden
 // sadece hatasiz VE (cakismasi yoksa ya da cakisma icin acik bir aksiyon secilmisse) satirlar
 // islenir. Cakisma icin aksiyon secilmemisse o satir hata olarak geri bildirilir - kullanicinin
 // KENDISI karar vermeli (2026-08-06 kullanici karari), sistem varsayilan bir davranis SECMEZ.
-app.MapPost("/api/arac-hareketleri/import-onayla", async (ImportOnaylaRequest request, SeyirMobilDbContext db) =>
+app.MapPost("/api/arac-hareketleri/import-onayla", async (ImportOnaylaRequest request, SeyirMobilDbContext db, HttpRequest httpRequest) =>
 {
+    var dil = Loc.DilKodu(httpRequest);
     var hamSatirlar = request.Satirlar
         .Select(s => new ImportHamSatir(s.SatirNo, s.AracPlaka, s.VeriTarihi ?? "", s.Hiz, s.KmSayaci))
         .ToList();
-    var dogrulama = (await ImportSatirlariDogrulaAsync(hamSatirlar, db)).ToDictionary(d => d.SatirNo);
+    var dogrulama = (await ImportSatirlariDogrulaAsync(hamSatirlar, db, dil)).ToDictionary(d => d.SatirNo);
 
     var eklenen = 0;
     var guncellenen = 0;
@@ -441,7 +443,7 @@ app.MapPost("/api/arac-hareketleri/import-onayla", async (ImportOnaylaRequest re
 
         if (dogru.Hatalar.Count > 0)
         {
-            hatali.Add($"Satır {satir.SatirNo}: {string.Join(" ", dogru.Hatalar)}");
+            hatali.Add(Loc.T(dil, "importSatirHata", satir.SatirNo, string.Join(" ", dogru.Hatalar)));
             continue;
         }
 
@@ -451,7 +453,7 @@ app.MapPost("/api/arac-hareketleri/import-onayla", async (ImportOnaylaRequest re
         {
             if (satir.CakismaAksiyonu != "UzerineYaz")
             {
-                hatali.Add($"Satır {satir.SatirNo}: Çakışma için \"üzerine yaz\" veya \"atla\" seçilmedi.");
+                hatali.Add(Loc.T(dil, "importCakismaSecilmedi", satir.SatirNo));
                 continue;
             }
             var mevcutKayit = await db.AracHareketleri
@@ -481,7 +483,7 @@ app.MapPost("/api/arac-hareketleri/import-onayla", async (ImportOnaylaRequest re
     {
         return Results.BadRequest(new
         {
-            message = "Bazı satırlar içe aktarılamadı, düzeltip tekrar deneyin.",
+            message = Loc.T(dil, "importBaziSatirlarBasarisiz"),
             hatalar = hatali,
             eklenenSayisi = eklenen,
             guncellenenSayisi = guncellenen,
@@ -676,8 +678,9 @@ app.MapPost("/api/auth/logout", async (ClaimsPrincipal principal, SessionStore s
 // ---------- Sifremi Unuttum / Sifre Sifirlama (feedback_001, Eren bey 2026-08-11) ----------
 // Auth ZORUNLU DEGIL - kullanici tanim geregi giris YAPAMADIGI icin bu akisi kullaniyor.
 
-app.MapPost("/api/auth/sifremi-unuttum", async (ForgotPasswordRequest request, SeyirMobilDbContext db, IConfiguration config, MailService mailService) =>
+app.MapPost("/api/auth/sifremi-unuttum", async (ForgotPasswordRequest request, SeyirMobilDbContext db, IConfiguration config, MailService mailService, HttpRequest httpRequest) =>
 {
+    var dil = Loc.DilKodu(httpRequest);
     var user = await db.Users.FirstOrDefaultAsync(u => u.Email == request.Email);
     if (user is not null)
     {
@@ -689,35 +692,38 @@ app.MapPost("/api/auth/sifremi-unuttum", async (ForgotPasswordRequest request, S
 
         var frontendBaseUrl = config["Frontend:BaseUrl"] ?? "http://localhost:4200";
         var sifirlamaLinki = $"{frontendBaseUrl}/sifre-sifirla?token={token}";
-        await mailService.GonderAsync(
-            user.Email!,
-            "Seyir Mobil - Şifre Sıfırlama",
-            $"Merhaba {user.Username},\n\nŞifrenizi sıfırlamak için aşağıdaki bağlantıya tıklayın:\n{sifirlamaLinki}\n\nBu bağlantı 1 saat geçerlidir. Bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.");
+        var (mailKonu, mailGovde) = dil == "en"
+            ? ("Seyir Mobil - Password Reset",
+               $"Hello {user.Username},\n\nClick the link below to reset your password:\n{sifirlamaLinki}\n\nThis link is valid for 1 hour. If you did not make this request, you can ignore this email.")
+            : ("Seyir Mobil - Şifre Sıfırlama",
+               $"Merhaba {user.Username},\n\nŞifrenizi sıfırlamak için aşağıdaki bağlantıya tıklayın:\n{sifirlamaLinki}\n\nBu bağlantı 1 saat geçerlidir. Bu isteği siz yapmadıysanız bu e-postayı görmezden gelebilirsiniz.");
+        await mailService.GonderAsync(user.Email!, mailKonu, mailGovde);
     }
     // Kullanici bulunsun/bulunmasin TAMAMEN AYNI mesaj donuyor - "bu email sistemde kayitli
     // mi?" sorusuna cevap sizdirmamak icin (email enumeration'a karsi bilincli onlem).
-    return Results.Ok(new { message = "Eğer bu e-posta adresi sistemde kayıtlıysa, şifre sıfırlama bağlantısı gönderildi." });
+    return Results.Ok(new { message = Loc.T(dil, "sifremiUnuttumYanit") });
 })
 .WithName("ForgotPassword");
 
-app.MapPost("/api/auth/sifre-sifirla", async (ResetPasswordRequest request, SeyirMobilDbContext db) =>
+app.MapPost("/api/auth/sifre-sifirla", async (ResetPasswordRequest request, SeyirMobilDbContext db, HttpRequest httpRequest) =>
 {
+    var dil = Loc.DilKodu(httpRequest);
     if (request.NewPassword.Length < 6)
     {
-        return Results.BadRequest(new { message = "Şifre en az 6 karakter olmalı." });
+        return Results.BadRequest(new { message = Loc.T(dil, "sifreKisa") });
     }
 
     var user = await db.Users.FirstOrDefaultAsync(u => u.ResetToken == request.Token);
     if (user is null || user.ResetTokenExpiry is null || user.ResetTokenExpiry < DateTime.UtcNow)
     {
-        return Results.BadRequest(new { message = "Sıfırlama bağlantısı geçersiz veya süresi dolmuş. Yeniden \"Şifremi Unuttum\" isteğinde bulunun." });
+        return Results.BadRequest(new { message = Loc.T(dil, "sifirlamaGecersiz") });
     }
 
     user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(request.NewPassword);
     user.ResetToken = null;
     user.ResetTokenExpiry = null;
     await db.SaveChangesAsync();
-    return Results.Ok(new { message = "Şifreniz güncellendi, şimdi giriş yapabilirsiniz." });
+    return Results.Ok(new { message = Loc.T(dil, "sifreGuncellendi") });
 })
 .WithName("ResetPassword");
 
@@ -731,37 +737,38 @@ app.MapGet("/api/users", async (SeyirMobilDbContext db) =>
 .RequireAuthorization(policy => policy.RequireRole("Admin"))
 .WithName("GetUsers");
 
-app.MapPost("/api/users", async (CreateUserRequest request, SeyirMobilDbContext db) =>
+app.MapPost("/api/users", async (CreateUserRequest request, SeyirMobilDbContext db, HttpRequest httpRequest) =>
 {
+    var dil = Loc.DilKodu(httpRequest);
     if (string.IsNullOrWhiteSpace(request.Username))
     {
-        return Results.BadRequest(new { message = "Kullanıcı adı boş olamaz." });
+        return Results.BadRequest(new { message = Loc.T(dil, "kullaniciAdiBos") });
     }
     if (request.Password.Length < 6)
     {
-        return Results.BadRequest(new { message = "Şifre en az 6 karakter olmalı." });
+        return Results.BadRequest(new { message = Loc.T(dil, "sifreKisa") });
     }
     if (request.Role != "Admin" && request.Role != "Viewer")
     {
-        return Results.BadRequest(new { message = "Rol 'Admin' veya 'Viewer' olmalı." });
+        return Results.BadRequest(new { message = Loc.T(dil, "rolGecersiz") });
     }
     // E-posta ZORUNLU (mevcut/goc-oncesi kullanicilarda opsiyonel olsa da, yeni
     // kullanicilar icin zorunlu - "Sifremi Unuttum" akisinin on kosulu, bkz.
     // database/008_add_email_to_users_table.sql yorumu).
     if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains('@'))
     {
-        return Results.BadRequest(new { message = "Geçerli bir e-posta adresi girilmeli." });
+        return Results.BadRequest(new { message = Loc.T(dil, "emailGecersiz") });
     }
 
     var kullaniciAdiVarMi = await db.Users.AnyAsync(u => u.Username == request.Username);
     if (kullaniciAdiVarMi)
     {
-        return Results.BadRequest(new { message = "Bu kullanıcı adı zaten kayıtlı." });
+        return Results.BadRequest(new { message = Loc.T(dil, "kullaniciAdiKayitli") });
     }
     var emailVarMi = await db.Users.AnyAsync(u => u.Email == request.Email);
     if (emailVarMi)
     {
-        return Results.BadRequest(new { message = "Bu e-posta adresi zaten kayıtlı." });
+        return Results.BadRequest(new { message = Loc.T(dil, "emailKayitli") });
     }
 
     var user = new User
@@ -853,7 +860,7 @@ static (string Token, DateTime ExpiresAt) JwtOlustur(User user, IConfiguration c
 // Tek satirlik ekleme endpoint'inden (POST /api/arac-hareketleri) farki: burada AYNI plaka icin
 // BIRDEN FAZLA yeni okuma AYNI ANDA gelebiliyor - km tutarliligi sadece DB'deki mevcut kayitlara
 // gore degil, dosyadaki DIGER satirlara gore de (kronolojik siraya sokulup) kontrol edilmeli.
-static async Task<List<ImportSatiriSonuc>> ImportSatirlariDogrulaAsync(List<ImportHamSatir> hamSatirlar, SeyirMobilDbContext db)
+static async Task<List<ImportSatiriSonuc>> ImportSatirlariDogrulaAsync(List<ImportHamSatir> hamSatirlar, SeyirMobilDbContext db, string dil)
 {
     // 1. Mevcut (normalize plaka -> AracId + orijinal DB plaka string'i) eslemesi.
     var mevcutPlakalar = await db.AracHareketleri
@@ -880,7 +887,7 @@ static async Task<List<ImportSatiriSonuc>> ImportSatirlariDogrulaAsync(List<Impo
 
         if (string.IsNullOrWhiteSpace(satir.AracPlaka) || !PlakaValidator.IsValid(satir.AracPlaka))
         {
-            hatalar.Add("Geçersiz plaka formatı. İl kodu 01-81 arasında olmalı. Ardından en fazla 3 harf gelir (Q, W, X harfleri kullanılmaz), şu kalıplardan biriyle devam eder: \"99 X 9999\", \"99 X 99999\", \"99 XX 999\", \"99 XX 9999\", \"99 XXX 99\" veya \"99 XXX 999\". Örnek: \"34 AB 141\".");
+            hatalar.Add(Loc.T(dil, "plakaFormatGecersiz"));
         }
 
         DateOnly? tarih = DateOnly.TryParse(satir.VeriTarihi, CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsedTarih)
@@ -888,16 +895,16 @@ static async Task<List<ImportSatiriSonuc>> ImportSatirlariDogrulaAsync(List<Impo
             : null;
         if (tarih is null)
         {
-            hatalar.Add("Geçersiz veya boş tarih.");
+            hatalar.Add(Loc.T(dil, "tarihGecersizBos"));
         }
 
         if (satir.Hiz is null || satir.Hiz < 0 || satir.Hiz > 300)
         {
-            hatalar.Add("Hız 0-300 aralığında olmalı.");
+            hatalar.Add(Loc.T(dil, "hizAraligi"));
         }
         if (satir.KmSayaci is null || satir.KmSayaci < 0)
         {
-            hatalar.Add("Km sayacı negatif olamaz veya boş.");
+            hatalar.Add(Loc.T(dil, "kmNegatifVeyaBos"));
         }
 
         int aracId;
@@ -933,7 +940,7 @@ static async Task<List<ImportSatiriSonuc>> ImportSatirlariDogrulaAsync(List<Impo
         {
             foreach (var s in grup)
             {
-                s.Hatalar.Add("Bu dosyada aynı plaka + tarih için birden fazla satır var.");
+                s.Hatalar.Add(Loc.T(dil, "dosyaIciTekrar"));
             }
         }
     }
@@ -967,11 +974,11 @@ static async Task<List<ImportSatiriSonuc>> ImportSatirlariDogrulaAsync(List<Impo
                 var index = zamanSirali.FindIndex(z => z.SatirNo == s.Ham.SatirNo);
                 if (index > 0 && s.Ham.KmSayaci <= zamanSirali[index - 1].KmSayaci)
                 {
-                    s.Hatalar.Add($"Km sayacı, {zamanSirali[index - 1].VeriTarihi:dd.MM.yyyy} tarihli {zamanSirali[index - 1].KmSayaci:N2} km değerinden büyük olmalı.");
+                    s.Hatalar.Add(Loc.T(dil, "kmBuyukOlmali", Loc.Tarih(dil, zamanSirali[index - 1].VeriTarihi), zamanSirali[index - 1].KmSayaci));
                 }
                 if (index < zamanSirali.Count - 1 && s.Ham.KmSayaci >= zamanSirali[index + 1].KmSayaci)
                 {
-                    s.Hatalar.Add($"Km sayacı, {zamanSirali[index + 1].VeriTarihi:dd.MM.yyyy} tarihli {zamanSirali[index + 1].KmSayaci:N2} km değerinden küçük olmalı.");
+                    s.Hatalar.Add(Loc.T(dil, "kmKucukOlmali", Loc.Tarih(dil, zamanSirali[index + 1].VeriTarihi), zamanSirali[index + 1].KmSayaci));
                 }
             }
 

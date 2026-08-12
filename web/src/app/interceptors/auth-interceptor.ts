@@ -11,6 +11,15 @@ import { Bildirim } from '../services/bildirim';
 // yerde 401'i ayrica kontrol etmesine gerek kalmaz.
 const TOKEN_GEREKMEYEN_YOLLAR = ['/api/auth/login'];
 
+// Backend mesajlarinin (dogrulama/hata metinleri) TR/EN cevirisi icin secili uygulama dilini
+// her istekte bildiriyoruz (2026-08-12). DOGRUDAN localStorage'dan okunuyor, `Dil` servisi
+// inject EDILMIYOR - Dil servisi TranslateService'e bagimli, TranslateService KENDI ceviri
+// dosyasini yuklerken bu interceptor'dan gecen bir HTTP istegi atiyor; interceptor icinden
+// Dil/TranslateService inject etmeye calismak NG0200 dongusel bagimlilik hatasina yol aciyordu
+// (ayni sebep Bildirim.ts'te de yasandi, bkz. o dosyanin yorumu) - localStorage'a dogrudan
+// erismek bu dongudeki HICBIR servise bagimli olmadigi icin sorunu tamamen atlatiyor.
+const DIL_ANAHTARI = 'seyir_dil';
+
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(Auth);
   const router = inject(Router);
@@ -18,11 +27,13 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   const tokenGerekmiyor = TOKEN_GEREKMEYEN_YOLLAR.some((yol) => req.url.includes(yol));
   const token = auth.token();
+  const dil = localStorage.getItem(DIL_ANAHTARI) ?? 'tr';
 
+  const baslikliIstek = req.clone({ setHeaders: { 'Accept-Language': dil } });
   const istek =
     token && !tokenGerekmiyor
-      ? req.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
-      : req;
+      ? baslikliIstek.clone({ setHeaders: { Authorization: `Bearer ${token}` } })
+      : baslikliIstek;
 
   return next(istek).pipe(
     catchError((hata) => {
