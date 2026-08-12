@@ -10,6 +10,8 @@
   min-height: 100vh;
   display: flex;
   align-items: stretch;
+  /* Sayfa aynalandı (2026-08-12) - login.css ile AYNI (bilinçli kod tekrarı). */
+  flex-direction: row-reverse;
 }
 
 /* Dil seçici - login.css ile AYNI (bilinçli kod tekrarı, bkz. dosyanın üst yorumu). */
@@ -18,6 +20,23 @@
   top: clamp(1rem, 3vw, 1.5rem);
   right: clamp(1rem, 3vw, 1.5rem);
   z-index: 5;
+}
+
+::ng-deep .login-dil-secici .dx-texteditor-input-container,
+::ng-deep .login-dil-secici.dx-texteditor {
+  background-color: transparent;
+}
+
+::ng-deep .login-dil-secici.dx-editor-outlined {
+  border-color: var(--ink-700);
+}
+
+::ng-deep .login-dil-secici .dx-texteditor-input {
+  color: var(--slate-300);
+}
+
+::ng-deep .login-dil-secici .dx-dropdowneditor-icon::before {
+  color: var(--slate-300);
 }
 
 .login-split .login-nav {
@@ -51,16 +70,27 @@
     repeating-linear-gradient(90deg, rgba(127, 196, 224, 0.032) 0 1px, transparent 1px 56px);
 }
 
+/* Büyük logo (2026-08-12) - login.css ile AYNI (bilinçli kod tekrarı). */
 .login-brand {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  gap: 0.9rem;
   color: var(--paper-0);
+}
+
+.login-brand-wordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.login-brand-line {
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 4.5vw, 3rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
 }
 
 .login-brand svg {
@@ -166,10 +196,11 @@
 
 .login-form h2 {
   margin: 0;
-  font-size: 1.3rem;
-  font-weight: 650;
+  /* login.css ile AYNI (bilinçli kod tekrarı, bkz. dosyanın üst yorumu) - Clash Display büyütüldü. */
+  font-size: 1.65rem;
+  font-weight: 600;
   color: var(--ink-900);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .login-form-sub {

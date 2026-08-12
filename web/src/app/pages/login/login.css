@@ -16,15 +16,39 @@
   min-height: 100vh;
   display: flex;
   align-items: stretch;
+  /* Sayfa aynalandı (2026-08-12, kullanıcı isteği): koyu marka paneli artık SAĞDA, form SOLDA -
+     DOM sırası (nav sonra form) BİLİNÇLİ OLARAK değiştirilmedi, sadece görsel sıra flex ile ters
+     çevrildi (klavye/tab sırası formdan başlıyor gibi davranmaya devam ediyor - nav panelinde
+     zaten odaklanabilir bir eleman yok, aria-hidden svg hariç). */
+  flex-direction: row-reverse;
 }
 
-/* Dil seçici - sağ (açık) panelin sağ üst köşesi, sayfanın geri kalanından bağımsız,
-   sabit bir konumda (2026-08-12). */
+/* Dil seçici - sağ üst köşe, sayfanın geri kalanından bağımsız sabit bir konumda (2026-08-12).
+   Aynalama sonrası bu köşe artık KOYU marka panelinin üzerine düşüyor - dx-select-box'ın
+   varsayılan açık zemin rengi koyu zeminde uyumsuz duruyordu, header'daki .dil-secici ile AYNI
+   ::ng-deep tekniğiyle düzeltildi (aşağıda). */
 .login-dil-secici {
   position: absolute;
   top: clamp(1rem, 3vw, 1.5rem);
   right: clamp(1rem, 3vw, 1.5rem);
   z-index: 5;
+}
+
+::ng-deep .login-dil-secici .dx-texteditor-input-container,
+::ng-deep .login-dil-secici.dx-texteditor {
+  background-color: transparent;
+}
+
+::ng-deep .login-dil-secici.dx-editor-outlined {
+  border-color: var(--ink-700);
+}
+
+::ng-deep .login-dil-secici .dx-texteditor-input {
+  color: var(--slate-300);
+}
+
+::ng-deep .login-dil-secici .dx-dropdowneditor-icon::before {
+  color: var(--slate-300);
 }
 
 .login-split .login-nav {
@@ -61,21 +85,36 @@
     repeating-linear-gradient(90deg, rgba(127, 196, 224, 0.032) 0 1px, transparent 1px 56px);
 }
 
+/* Logo (2026-08-12 büyütme turu, kullanıcı isteği): "Seyir" üstte, "Mobil" altta, sola YAPIŞIK
+   (flex-direction:column + align-items:flex-start), Clash Display ile - genel başlık kimliğiyle
+   AYNI font (font-mono DEĞİL, eski küçük tek-satır mono marka buradaydı). Panelin bol
+   padding'i (clamp(1.75rem,4vw,3rem)) sayesinde header'daki kısıtlı versiyonundan çok daha
+   büyük olabiliyor. */
 .login-brand {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+  gap: 0.9rem;
   color: var(--paper-0);
 }
 
 .login-brand svg {
   flex: none;
   color: var(--route-500);
+}
+
+.login-brand-wordmark {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.login-brand-line {
+  font-family: var(--font-display);
+  font-size: clamp(2.1rem, 4.5vw, 3rem);
+  font-weight: 700;
+  line-height: 0.9;
+  letter-spacing: -0.015em;
+  text-transform: uppercase;
 }
 
 .login-route-wrap {
@@ -179,10 +218,14 @@
 
 .login-form h2 {
   margin: 0;
-  font-size: 1.3rem;
-  font-weight: 650;
+  /* Clash Display'in "buyuk anlarda gur ses" karakteri burada gosterilsin diye bir onceki
+     (sistem fontuyla kalibre edilmis, 1.3rem) boyuttan buyutuldu - font-kit'in onerdigi tracking
+     (-0.02/-0.03em araligi) ve YUKLENEN agirliklardan biri (400/600/700 - Fontshare'den bu
+     uculu istendi, ara bir deger olan "650" tarayicida sentezleniyordu) kullaniliyor. */
+  font-size: 1.65rem;
+  font-weight: 600;
   color: var(--ink-900);
-  letter-spacing: -0.01em;
+  letter-spacing: -0.02em;
 }
 
 .login-form-sub {

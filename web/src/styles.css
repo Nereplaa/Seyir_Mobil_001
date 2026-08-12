@@ -24,6 +24,14 @@
   --danger-600: #c0463a; /* hata/tehlike */
   --danger-100: #f7ded9;
   --font-mono: 'Cascadia Code', 'SF Mono', ui-monospace, Consolas, 'Courier New', monospace;
+  /* Roadmap Madde 3 (2026-08-12, kullanıcı seçimi - Fontshare'den) - "AI şablonu hissi"ni kırmak
+     için gövde/başlık fontları. --font-mono (yukarıda) BİLİNÇLİ OLARAK dokunulmadı - nav/etiket/
+     telemetri gibi "enstrüman paneli" vurgu metinlerinde hâlâ kullanılıyor, kurum onaylı ayrı bir
+     kimlik unsuru (bkz. label/.panel-eyebrow kuralları). Fontlar index.html'de Fontshare CSS
+     link'iyle yükleniyor; sistem fontu fallback zinciri font yüklenene/başarısız olana kadar
+     (font-display:swap) veya font engellenirse (ör. offline) diye korunuyor. */
+  --font-display: 'Clash Display', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-body: 'Clash Grotesk', system-ui, -apple-system, 'Segoe UI', sans-serif;
   --shadow: 0 1px 2px rgba(14, 26, 43, 0.08), 0 4px 16px rgba(14, 26, 43, 0.08); /* kart/yüzey yükseltisi (elevation) */
 
   /* DevExtreme Fluent SaaS temasının kendi CSS custom property'leri üzerinden yeniden
@@ -47,7 +55,7 @@
 
 body {
   margin: 0;
-  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-family: var(--font-body);
   color: var(--ink-900);
   /* background-color (uzun form) - bkz. AI_NOTES/decisions.md 2026-08-07 15:xx girişi: Angular'ın
      build zinciri (lightningcss) "background: var(--x)" kısayolunu bazen background-color'ı BOŞ
@@ -57,7 +65,18 @@ body {
 }
 
 h1, h2, h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
   color: var(--ink-900);
+}
+
+/* DevExtreme kendi bileşenlerine (.dx-widget - buton, input, grid, hepsi) sabit bir font-family
+   ("segoe ui" vb.) yazıyor (bkz. node_modules/devextreme/dist/css/dx.fluent.saas.light.css) -
+   body'den MİRAS ALMIYOR, açık override şart. Aynı özgüllük (.dx-widget), styles.css DevExtreme
+   CSS'inden SONRA yüklendiği için (bkz. angular.json) kaynak sırasıyla kazanıyor - DevExtreme'in
+   renk değişkenlerini override etme deseniyle AYNI mantık (bkz. bu dosyanın :root bloğu). */
+.dx-widget {
+  font-family: var(--font-body);
 }
 
 label {

@@ -588,6 +588,19 @@ düzeltildi, ve içe aktarma ekranındaki durum etiketlerinin İngilizce'de kesi
 
 ---
 
+## 2026-08-12 15:18 — Roadmap Madde 3 Başladı: Yeni Yazı Tipleri ve Giriş Ekranının Yenilenmesi
+
+Kurumun "yapay zeka ile üretilmiş hissi" geri bildirimini gidermek için üzerinde çalışılan
+son madde başladı. Kullanıcı, ücretsiz font kütüphanelerini kendisi inceleyip **Clash Display**
+(başlıklar) ve **Clash Grotesk** (gövde metni) çiftine karar verdi; siteye entegre edildi.
+
+Ardından giriş ekranı yeniden tasarlandı: sayfa aynalandı (marka paneli artık sağda, giriş
+formu solda), "Seyir Mobil" logosu büyütülüp yeni fontla iki satırlık, göze çarpan bir biçimde
+yeniden düzenlendi. Şifremi Unuttum ve Şifre Sıfırlama ekranları da (aynı görsel kimliği
+paylaştıkları için) aynı şekilde güncellendi.
+
+---
+
 ## 🔜 Sıradaki Adımlar
 
 - [x] Web istemcisinin eklenmesi (aynı backend API üzerinden)

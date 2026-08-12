@@ -32,3 +32,7 @@ obj/
 # gercek proje ciktisi degil)
 import-test-tum-senaryolar.xlsx
 import_test2.xlsx
+
+# Kisisel tasarim referans dosyalari (Roadmap Madde 3, 2026-08-12 - Fontpair.co'dan indirilen
+# font/brand kit PDF'i, sadece font secimine karar vermek icin kullanildi, proje ciktisi degil)
+clash-display-clash-grotesk-brand-kit.pdf
