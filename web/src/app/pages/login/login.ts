@@ -1,13 +1,14 @@
 import { Component, inject, signal } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
-import { DxTextBoxModule, DxButtonModule } from 'devextreme-angular';
+import { DxTextBoxModule, DxButtonModule, DxSelectBoxModule } from 'devextreme-angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Auth } from '../../services/auth';
+import { Dil, DESTEKLENEN_DILLER } from '../../services/dil';
 import { rolBaslangicRotasi } from '../../utils/rol-yonlendirme';
 
 @Component({
   selector: 'app-login',
-  imports: [RouterLink, DxTextBoxModule, DxButtonModule, TranslatePipe],
+  imports: [RouterLink, DxTextBoxModule, DxButtonModule, DxSelectBoxModule, TranslatePipe],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })
@@ -15,6 +16,12 @@ export class Login {
   private readonly auth = inject(Auth);
   private readonly router = inject(Router);
   private readonly translate = inject(TranslateService);
+  protected readonly dil = inject(Dil);
+  protected readonly dilSecenekleri = DESTEKLENEN_DILLER;
+
+  dilDegistir(kod: string): void {
+    this.dil.degistir(kod);
+  }
 
   username = signal('');
   password = signal('');

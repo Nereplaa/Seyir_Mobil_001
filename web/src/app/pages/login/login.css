@@ -11,10 +11,20 @@
    (varsayılan) bu tür "iki yan yana panel, ikisi de TAM yükseklik" deseninde çok daha güvenilir -
    zaten :host/main'de aynı sebeple flex kullanılıyor (bkz. app.css). */
 .login-split {
+  position: relative;
   margin: -1.25rem -1.5rem;
   min-height: 100vh;
   display: flex;
   align-items: stretch;
+}
+
+/* Dil seçici - sağ (açık) panelin sağ üst köşesi, sayfanın geri kalanından bağımsız,
+   sabit bir konumda (2026-08-12). */
+.login-dil-secici {
+  position: absolute;
+  top: clamp(1rem, 3vw, 1.5rem);
+  right: clamp(1rem, 3vw, 1.5rem);
+  z-index: 5;
 }
 
 .login-split .login-nav {

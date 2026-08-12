@@ -1,12 +1,13 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
-import { DxTextBoxModule, DxButtonModule } from 'devextreme-angular';
+import { DxTextBoxModule, DxButtonModule, DxSelectBoxModule } from 'devextreme-angular';
 import { TranslatePipe, TranslateService } from '@ngx-translate/core';
 import { Auth } from '../../services/auth';
+import { Dil, DESTEKLENEN_DILLER } from '../../services/dil';
 
 @Component({
   selector: 'app-sifre-sifirla',
-  imports: [RouterLink, DxTextBoxModule, DxButtonModule, TranslatePipe],
+  imports: [RouterLink, DxTextBoxModule, DxButtonModule, DxSelectBoxModule, TranslatePipe],
   templateUrl: './sifre-sifirla.html',
   styleUrl: './sifre-sifirla.css',
 })
@@ -14,6 +15,12 @@ export class SifreSifirla implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly auth = inject(Auth);
   private readonly translate = inject(TranslateService);
+  protected readonly dil = inject(Dil);
+  protected readonly dilSecenekleri = DESTEKLENEN_DILLER;
+
+  dilDegistir(kod: string): void {
+    this.dil.degistir(kod);
+  }
 
   token = '';
   yeniSifre = signal('');

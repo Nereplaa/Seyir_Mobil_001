@@ -1,4 +1,15 @@
 <div class="login-split">
+  <!-- Dil seçici - login.html ile AYNI (bilinçli kod tekrarı, bkz. sifremi-unuttum.css yorumu). -->
+  <dx-select-box
+    class="login-dil-secici"
+    [dataSource]="dilSecenekleri"
+    displayExpr="etiket"
+    valueExpr="kod"
+    [value]="dil.guncelDil"
+    (onValueChanged)="dilDegistir($event.value)"
+    width="72"
+  ></dx-select-box>
+
   <!-- Sol panel login.html ile AYNI (bilinçli kod tekrarı - bkz. sifremi-unuttum.css yorumu). -->
   <div class="login-nav">
     <div class="login-brand">

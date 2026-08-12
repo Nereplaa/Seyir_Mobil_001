@@ -1,4 +1,18 @@
 <div class="login-split">
+  <!-- Dil seçici (2026-08-12) - header burada gizli olduğu için (bkz. app.ts loginEkraninda),
+       auth ekranlarının kendi köşesinde ayrı bir seçici var. Sağ panelin (açık zemin) üzerinde,
+       sağ üst köşe - sol paneldeki telemetri satırıyla çakışmıyor, DevExtreme trial banner'ının
+       (varsa) hemen altında kalıyor. -->
+  <dx-select-box
+    class="login-dil-secici"
+    [dataSource]="dilSecenekleri"
+    displayExpr="etiket"
+    valueExpr="kod"
+    [value]="dil.guncelDil"
+    (onValueChanged)="dilDegistir($event.value)"
+    width="72"
+  ></dx-select-box>
+
   <!-- Sol panel: marka + rota/durak grafiği + dekoratif "telemetri" satırı (SABİT metin, backend'e
        yeni bir çağrı YOK - salt görsel, bkz. AI_NOTES/decisions.md 2026-08-07 girişi). -->
   <div class="login-nav">

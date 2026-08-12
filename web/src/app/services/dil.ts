@@ -26,8 +26,14 @@ export class Dil {
   }
 
   degistir(kod: string): void {
-    this.translate.use(kod);
+    // SIRA ONEMLI (2026-08-12 bug fix): once localStorage, SONRA translate.use(). Aksi durumda
+    // (eski sira: once use() sonra localStorage) translate.use()'in tetikledigi onLangChange
+    // aboneleri (bkz. import.ts - dil degisince otomatik yenidenDogrula()) SENKRON calisiyor ve
+    // authInterceptor o anda localStorage'i OKUYOR - henuz yazilmamis oldugu icin BIR ONCEKI
+    // dili gonderiyordu (backend'e hep "bir adim geride" bir Accept-Language gidiyordu, gercek
+    // kullanici testinde yakalandi: hizli TR/EN degistirmede eski dildeki mesajlar goruluyordu).
     localStorage.setItem(DIL_ANAHTARI, kod);
+    this.translate.use(kod);
   }
 
   get guncelDil(): string {

@@ -5,10 +5,19 @@
    test edilmiş login ekranına dokunma riski taşıdığı için TERCİH EDİLMEDİ - üç sayfa
    arasında görsel tutarlılık, üç ayrı (ama küçük, ~200 satır) kopya CSS ile korunuyor. */
 .login-split {
+  position: relative;
   margin: -1.25rem -1.5rem;
   min-height: 100vh;
   display: flex;
   align-items: stretch;
+}
+
+/* Dil seçici - login.css ile AYNI (bilinçli kod tekrarı, bkz. dosyanın üst yorumu). */
+.login-dil-secici {
+  position: absolute;
+  top: clamp(1rem, 3vw, 1.5rem);
+  right: clamp(1rem, 3vw, 1.5rem);
+  z-index: 5;
 }
 
 .login-split .login-nav {

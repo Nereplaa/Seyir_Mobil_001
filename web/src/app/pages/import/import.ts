@@ -100,7 +100,12 @@ export class Import implements OnInit {
         caption: this.translate.instant('import.kolonDurum'),
         // 190px'te "Çakışma — karar bekliyor" gibi en uzun durum metni çipin kenarından taşıp
         // yan sütuna değiyordu (gerçek kullanıcı geri bildirimi, 2026-08-07) - 230'a çıkarıldı.
-        width: 230,
+        // SABİT width DEĞİL minWidth (2026-08-12 düzeltme): İngilizce karşılığı ("Conflict —
+        // decision pending") Türkçe'den daha uzun olduğu için sabit 230px'te "..." ile
+        // kesiliyordu (gerçek kullanıcı geri bildirimi) - "#" sütunundaki AYNI desen
+        // ([columnAutoWidth]="true" sayesinde minWidth alt sınır olur, içerik daha uzunsa
+        // sütun otomatik büyür, hangi dil daha uzunsa ona göre kendini ayarlar).
+        minWidth: 230,
         allowEditing: false,
         calculateCellValue: (r: GridSatiri) => this.durumMetni(r),
         // dx-data-grid cell'leri bu grid'de "cell" editing modunda olsa da (allowEditing: false
@@ -171,7 +176,17 @@ export class Import implements OnInit {
   }
 
   constructor() {
-    this.translate.onLangChange.subscribe(() => this.columns.set(this.kolonlariKur()));
+    this.translate.onLangChange.subscribe(() => {
+      this.columns.set(this.kolonlariKur());
+      // Satir bazli hata/durum metinleri backend'den DUZ STRING olarak geliyor (bir ceviri
+      // anahtari degil) - bu yuzden dil degisince kendiliginden guncellenmiyorlar. Ekranda
+      // zaten dogrulanmis satir varsa, ayni veriyi YENI dille backend'e tekrar sorup mesajlari
+      // tazeliyoruz (2026-08-12, gercek kullanici geri bildirimi: "dil degistirince eski hata
+      // mesajlari oldugu gibi kaliyor").
+      if (this.satirlar().length > 0) {
+        this.yenidenDogrula();
+      }
+    });
   }
 
   toplamSatir = computed(() => this.satirlar().length);
