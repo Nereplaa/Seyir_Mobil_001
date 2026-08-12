@@ -579,6 +579,15 @@ eksik giderildi: artık sunucu tarafındaki tüm doğrulama ve hata mesajları d
 
 ---
 
+## 2026-08-12 14:19 — Giriş Ekranlarına Dil Seçici Eklendi, İnce Ayarlar Yapıldı
+
+Giriş, şifremi unuttum ve şifre sıfırlama ekranlarında üst menü gizli olduğu için dil
+değiştirilemiyordu — bu üç ekrana da kendi dil seçicileri eklendi. Test sırasında bulunan iki
+küçük sorun da giderildi: hızlı dil değişimlerinde arka planda bir adım geriden gelen dil bilgisi
+düzeltildi, ve içe aktarma ekranındaki durum etiketlerinin İngilizce'de kesilmesi önlendi.
+
+---
+
 ## 🔜 Sıradaki Adımlar
 
 - [x] Web istemcisinin eklenmesi (aynı backend API üzerinden)
