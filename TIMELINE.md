@@ -601,6 +601,18 @@ paylaştıkları için) aynı şekilde güncellendi.
 
 ---
 
+## 2026-08-12 17:00 — Tasarım Kararı İçin Karşılaştırma Sayfası Hazırlandı
+
+Yeni giriş ekranı tasarımı üzerine hangi görsel stilin benimseneceğine karar verebilmek için
+geçici bir karşılaştırma sayfası hazırlandı: mevcut kurumsal kimlik (logo ve rota grafiği)
+korunarak, aynı formun 6 farklı kart/görünüm stili (düz koyu, yalın/flat, Material tasarım,
+minimalist, neo-brütalist, koyu neumorfizm) yan yana denenip karşılaştırılabiliyor. Bu, kalıcı
+bir özellik değil — nihai tasarım kararı verildiğinde kaldırılacak bir çalışma aracı.
+
+Gün burada tamamlandı, tasarım kararı yarın netleştirilecek.
+
+---
+
 ## 🔜 Sıradaki Adımlar
 
 - [x] Web istemcisinin eklenmesi (aynı backend API üzerinden)
@@ -620,4 +632,6 @@ paylaştıkları için) aynı şekilde güncellendi.
 - [ ] Üst menü/sekme yapısının DevExtreme'e taşınması (isteğe bağlı, henüz yapılmadı)
 - [x] "Şifremi Unuttum" akışı + e-posta ile şifre sıfırlama (gerçek mail testiyle doğrulandı)
 - [x] Çoklu dil desteği — tüm ekranlar İngilizce/Türkçe arasında geçiş yapabiliyor
-- [ ] Arayüz tasarımında "yapay zeka hissi"ni kırma çalışması (özellikle font seçimi)
+- [~] Arayüz tasarımında "yapay zeka hissi"ni kırma çalışması — yeni fontlar seçilip entegre
+      edildi, giriş ekranı yeniden tasarlandı; nihai görsel stil kararı için karşılaştırma
+      sayfası hazırlandı, karar henüz verilmedi
