@@ -12,16 +12,27 @@
       <h1>Seyir Mobil <span class="brand-sub">Araç Takip</span></h1>
     </div>
     <nav>
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">Araç Hareketleri</a>
-      <a routerLink="/rapor" routerLinkActive="active">Araç Hareket Raporu</a>
-      <a routerLink="/import" routerLinkActive="active">Excel İçe Aktar</a>
+      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'nav.hareketler' | translate }}</a>
+      <a routerLink="/rapor" routerLinkActive="active">{{ 'nav.rapor' | translate }}</a>
+      <a routerLink="/import" routerLinkActive="active">{{ 'nav.import' | translate }}</a>
       @if (auth.role() === 'Admin') {
-        <a routerLink="/admin" routerLinkActive="active">Admin Paneli</a>
+        <a routerLink="/admin" routerLinkActive="active">{{ 'nav.admin' | translate }}</a>
       }
     </nav>
     <div class="kullanici-bilgisi">
+      <!-- Dil secici (feedback_001, coklu dil altyapisi) - su an sadece nav metinleri gercekten
+           cevrilmis, geri kalan ekranlar kademeli olarak tasinacak (bkz. services/dil.ts). -->
+      <dx-select-box
+        class="dil-secici"
+        [dataSource]="dilSecenekleri"
+        displayExpr="etiket"
+        valueExpr="kod"
+        [value]="dil.guncelDil"
+        (onValueChanged)="dilDegistir($event.value)"
+        width="72"
+      ></dx-select-box>
       <span class="kullanici-adi">{{ auth.username() }} <span class="kullanici-rol">({{ auth.role() }})</span></span>
-      <dx-button text="Çıkış Yap" stylingMode="outlined" (onClick)="cikisYap()"></dx-button>
+      <dx-button [text]="'nav.cikisYap' | translate" stylingMode="outlined" (onClick)="cikisYap()"></dx-button>
     </div>
   </header>
 }

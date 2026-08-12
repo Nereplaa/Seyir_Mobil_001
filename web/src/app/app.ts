@@ -1,9 +1,11 @@
 import { Component, HostListener, inject, signal } from '@angular/core';
 import { Router, RouterOutlet, RouterLink, RouterLinkActive, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
-import { DxButtonModule } from 'devextreme-angular';
+import { DxButtonModule, DxSelectBoxModule } from 'devextreme-angular';
+import { TranslatePipe } from '@ngx-translate/core';
 import { Auth } from './services/auth';
 import { EtkilesimLoglayici } from './services/etkilesim-loglayici';
+import { Dil, DESTEKLENEN_DILLER } from './services/dil';
 
 // Interaktif kabul edilen elemanlar - DevExtreme kendi bilesenlerini bu class'larla
 // render ediyor (dx-button, checkbox, calendar hucresi, liste/dropdown ogesi vb.), duz
@@ -16,26 +18,40 @@ const INTERAKTIF_SECICI =
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive, DxButtonModule],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, DxButtonModule, DxSelectBoxModule, TranslatePipe],
   templateUrl: './app.html',
   styleUrl: './app.css'
 })
 export class App {
   protected readonly auth = inject(Auth);
+  protected readonly dil = inject(Dil);
   private readonly router = inject(Router);
   private readonly etkilesimLoglayici = inject(EtkilesimLoglayici);
 
-  // Login ekranı KENDİ tam-sayfa marka/rota panelini gösteriyor - üst header'ın (marka şeridi +
-  // nav) orada da görünmesi çift/gereksiz duruyordu (2026-08-07 geri bildirimi). auth durumuna
-  // göre gizlemek YETERSİZDİ: kullanıcı token'ı hâlâ geçerliyken /login'e gelirse (guard bunu
-  // engellemiyor) hem header hem login formu aynı anda görünüyordu - bu yüzden doğrudan ROTAYA
-  // göre (yalnızca /login'de gizli) karar veriliyor, auth durumundan bağımsız.
-  protected readonly loginEkraninda = signal(this.router.url.startsWith('/login'));
+  protected readonly dilSecenekleri = DESTEKLENEN_DILLER;
+
+  // Login (ve aynı tam-sayfa split-screen kabuğunu paylaşan Şifremi Unuttum / Şifre Sıfırla)
+  // ekranları KENDİ marka/rota panelini gösteriyor - üst header'ın orada da görünmesi çift/
+  // gereksiz duruyordu (2026-08-07 geri bildirimi). auth durumuna göre gizlemek YETERSİZDİ:
+  // kullanıcı token'ı hâlâ geçerliyken bu rotalara gelirse (guard bunu engellemiyor, zaten
+  // hepsi auth gerektirmeyen public rotalar) hem header hem form aynı anda görünüyordu - bu
+  // yüzden doğrudan ROTAYA göre (auth durumundan bağımsız) karar veriliyor.
+  private readonly AUTH_ROTALARI = ['/login', '/sifremi-unuttum', '/sifre-sifirla'];
+  protected readonly loginEkraninda = signal(this.authRotasindaMi(this.router.url));
 
   constructor() {
+    this.dil.baslat();
     this.router.events.pipe(filter((e) => e instanceof NavigationEnd)).subscribe((e) => {
-      this.loginEkraninda.set((e as NavigationEnd).urlAfterRedirects.startsWith('/login'));
+      this.loginEkraninda.set(this.authRotasindaMi((e as NavigationEnd).urlAfterRedirects));
     });
+  }
+
+  private authRotasindaMi(url: string): boolean {
+    return this.AUTH_ROTALARI.some((rota) => url.startsWith(rota));
+  }
+
+  dilDegistir(kod: string): void {
+    this.dil.degistir(kod);
   }
 
   cikisYap(): void {

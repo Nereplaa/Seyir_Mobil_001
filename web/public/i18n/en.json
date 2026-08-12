@@ -1,0 +1,10 @@
+{
+  "nav": {
+    "hareketler": "Vehicle Movements",
+    "rapor": "Vehicle Movement Report",
+    "import": "Import from Excel",
+    "admin": "Admin Panel",
+    "cikisYap": "Log Out",
+    "dil": "Language"
+  }
+}

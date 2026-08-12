@@ -113,6 +113,25 @@
   color: var(--paper-0);
 }
 
+/* Dil seçici (dx-select-box) - "Çıkış Yap" butonuyla AYNI teknik (::ng-deep, koyu header'a
+   uygun renk override'ı) - bileşenin varsayılan açık zemini koyu header'da uyumsuz duruyordu. */
+.kullanici-bilgisi ::ng-deep .dil-secici .dx-texteditor-input-container,
+.kullanici-bilgisi ::ng-deep .dil-secici.dx-texteditor {
+  background-color: transparent;
+}
+
+.kullanici-bilgisi ::ng-deep .dil-secici.dx-editor-outlined {
+  border-color: var(--ink-700);
+}
+
+.kullanici-bilgisi ::ng-deep .dil-secici .dx-texteditor-input {
+  color: var(--slate-300);
+}
+
+.kullanici-bilgisi ::ng-deep .dil-secici .dx-dropdowneditor-icon::before {
+  color: var(--slate-300);
+}
+
 main {
   padding: 1.25rem 1.5rem;
   width: 100%;

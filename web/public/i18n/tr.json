@@ -1,0 +1,10 @@
+{
+  "nav": {
+    "hareketler": "Araç Hareketleri",
+    "rapor": "Araç Hareket Raporu",
+    "import": "Excel İçe Aktar",
+    "admin": "Admin Paneli",
+    "cikisYap": "Çıkış Yap",
+    "dil": "Dil"
+  }
+}
