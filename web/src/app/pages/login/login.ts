@@ -1,12 +1,12 @@
 import { Component, inject, signal } from '@angular/core';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { DxTextBoxModule, DxButtonModule } from 'devextreme-angular';
 import { Auth } from '../../services/auth';
 import { rolBaslangicRotasi } from '../../utils/rol-yonlendirme';
 
 @Component({
   selector: 'app-login',
-  imports: [DxTextBoxModule, DxButtonModule],
+  imports: [RouterLink, DxTextBoxModule, DxButtonModule],
   templateUrl: './login.html',
   styleUrl: './login.css',
 })

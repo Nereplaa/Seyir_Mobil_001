@@ -14,3 +14,16 @@ export interface CurrentUserDto {
   username: string;
   role: string;
 }
+
+export interface ForgotPasswordRequestDto {
+  email: string;
+}
+
+export interface ResetPasswordRequestDto {
+  token: string;
+  newPassword: string;
+}
+
+export interface MesajYanitiDto {
+  message: string;
+}

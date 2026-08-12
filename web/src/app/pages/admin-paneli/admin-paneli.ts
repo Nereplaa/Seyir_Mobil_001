@@ -21,6 +21,7 @@ export class AdminPaneli implements OnInit {
 
   readonly dataGridColumns = [
     { dataField: 'username', caption: 'Kullanıcı Adı' },
+    { dataField: 'email', caption: 'E-posta' },
     { dataField: 'role', caption: 'Rol', width: 120 },
     {
       dataField: 'olusturmaTarihi',
@@ -38,6 +39,7 @@ export class AdminPaneli implements OnInit {
   yeniKullaniciAdi = '';
   yeniSifre = '';
   yeniRol = 'Viewer';
+  yeniEmail = '';
   ekleniyor = signal(false);
 
   ngOnInit(): void {
@@ -81,16 +83,26 @@ export class AdminPaneli implements OnInit {
       this.bildirim.hata('Şifre en az 6 karakter olmalı.');
       return;
     }
+    if (!this.yeniEmail.trim() || !this.yeniEmail.includes('@')) {
+      this.bildirim.hata('Geçerli bir e-posta adresi girilmeli.');
+      return;
+    }
 
     this.ekleniyor.set(true);
     this.api
-      .createKullanici({ username: this.yeniKullaniciAdi.trim(), password: this.yeniSifre, role: this.yeniRol })
+      .createKullanici({
+        username: this.yeniKullaniciAdi.trim(),
+        password: this.yeniSifre,
+        role: this.yeniRol,
+        email: this.yeniEmail.trim(),
+      })
       .subscribe({
         next: () => {
           this.ekleniyor.set(false);
           this.yeniKullaniciAdi = '';
           this.yeniSifre = '';
           this.yeniRol = 'Viewer';
+          this.yeniEmail = '';
           this.yukle();
         },
         error: (err) => {

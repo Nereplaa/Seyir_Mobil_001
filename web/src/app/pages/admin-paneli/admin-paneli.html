@@ -21,6 +21,16 @@
       ></dx-text-box>
     </div>
     <div class="field">
+      <label for="yeniEmail">E-posta</label>
+      <dx-text-box
+        id="yeniEmail"
+        mode="email"
+        [value]="yeniEmail"
+        (onValueChanged)="yeniEmail = $event.value ?? ''"
+        width="200"
+      ></dx-text-box>
+    </div>
+    <div class="field">
       <label for="yeniRol">Rol</label>
       <dx-select-box
         id="yeniRol"

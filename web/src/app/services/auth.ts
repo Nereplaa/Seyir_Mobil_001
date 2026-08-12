@@ -1,7 +1,13 @@
 import { Service, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
-import { LoginRequestDto, LoginResponseDto } from '../models/auth.models';
+import {
+  LoginRequestDto,
+  LoginResponseDto,
+  ForgotPasswordRequestDto,
+  ResetPasswordRequestDto,
+  MesajYanitiDto,
+} from '../models/auth.models';
 
 const API_BASE = 'http://localhost:5080/api/auth';
 const TOKEN_KEY = 'seyir_token';
@@ -22,6 +28,18 @@ export class Auth {
     return this.http
       .post<LoginResponseDto>(`${API_BASE}/login`, request)
       .pipe(tap((yanit) => this.oturumuKaydet(yanit)));
+  }
+
+  // Kullanici tanim geregi giris YAPAMADIGI icin bu ikisi (istemcinin kendi oturum durumundan
+  // bagimsiz) - login.ts'teki AYNI desen, sadece farkli endpoint'ler.
+  sifremiUnuttum(email: string): Observable<MesajYanitiDto> {
+    const request: ForgotPasswordRequestDto = { email };
+    return this.http.post<MesajYanitiDto>(`${API_BASE}/sifremi-unuttum`, request);
+  }
+
+  sifreSifirla(token: string, newPassword: string): Observable<MesajYanitiDto> {
+    const request: ResetPasswordRequestDto = { token, newPassword };
+    return this.http.post<MesajYanitiDto>(`${API_BASE}/sifre-sifirla`, request);
   }
 
   logout(): void {

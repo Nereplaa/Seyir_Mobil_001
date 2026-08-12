@@ -1,0 +1,87 @@
+<div class="login-split">
+  <!-- Sol panel login.html ile AYNI (bilinçli kod tekrarı - bkz. sifremi-unuttum.css yorumu). -->
+  <div class="login-nav">
+    <div class="login-brand">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+        <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4" />
+        <path d="M15.5 8.5 L11 11 L8.5 15.5 L13 13 Z" fill="currentColor" />
+      </svg>
+      Seyir Mobil
+    </div>
+
+    <div class="login-route-wrap">
+      <svg viewBox="0 0 320 380" aria-hidden="true">
+        <path class="login-route-path" d="M160 340 C 100 280, 50 220, 30 80" />
+        <path class="login-route-path" d="M160 340 C 120 290, 90 220, 70 140" />
+        <path class="login-route-path" d="M160 340 C 140 300, 120 250, 110 200" />
+        <path class="login-route-path" d="M160 340 C 165 250, 160 150, 160 60" />
+        <path class="login-route-path" d="M160 340 C 180 300, 200 250, 210 190" />
+        <path class="login-route-path" d="M160 340 C 200 290, 230 220, 250 130" />
+        <path class="login-route-path" d="M160 340 C 220 280, 260 220, 290 70" />
+
+        <circle class="login-waypoint" cx="160" cy="340" r="5.5" />
+
+        <circle class="login-waypoint-pulse" cx="30" cy="80" r="6" />
+        <circle class="login-waypoint-current" cx="30" cy="80" r="5.5" />
+
+        <circle class="login-waypoint" cx="70" cy="140" r="4" />
+        <circle class="login-waypoint" cx="110" cy="200" r="4" />
+
+        <circle class="login-waypoint-pulse login-waypoint-pulse-2" cx="160" cy="60" r="6" />
+        <circle class="login-waypoint-current" cx="160" cy="60" r="5.5" />
+
+        <circle class="login-waypoint" cx="210" cy="190" r="4" />
+        <circle class="login-waypoint" cx="250" cy="130" r="4" />
+
+        <circle class="login-waypoint-pulse login-waypoint-pulse-3" cx="290" cy="70" r="6" />
+        <circle class="login-waypoint-current" cx="290" cy="70" r="5.5" />
+      </svg>
+    </div>
+
+    <div class="login-telemetry">
+      <div><strong>42</strong>araç · aktif filo</div>
+      <div><strong>2 dk</strong>önce senkron</div>
+    </div>
+  </div>
+
+  <!-- Sağ panel: e-posta iste / sonuç mesajı -->
+  <div class="login-form">
+    @if (!gonderildi()) {
+      <div>
+        <h2>Şifremi Unuttum</h2>
+        <p class="login-form-sub">Kayıtlı e-posta adresini gir, sıfırlama bağlantısı gönderelim.</p>
+      </div>
+
+      <div class="field">
+        <label for="email">E-posta</label>
+        <dx-text-box
+          id="email"
+          mode="email"
+          [value]="email()"
+          (onValueChanged)="email.set($event.value ?? '')"
+          (onEnterKey)="gonder()"
+        ></dx-text-box>
+      </div>
+
+      @if (hataMesaji()) {
+        <p class="error-text">{{ hataMesaji() }}</p>
+      }
+
+      <dx-button
+        class="login-buton"
+        [text]="gonderiliyor() ? 'Gönderiliyor...' : 'Sıfırlama Bağlantısı Gönder'"
+        type="default"
+        width="100%"
+        [disabled]="gonderiliyor()"
+        (onClick)="gonder()"
+      ></dx-button>
+    } @else {
+      <div>
+        <h2>Kontrol Et</h2>
+        <p class="login-form-sub">{{ sonucMesaji() }}</p>
+      </div>
+    }
+
+    <p class="login-form-foot"><a routerLink="/login">← Girişe dön</a></p>
+  </div>
+</div>
