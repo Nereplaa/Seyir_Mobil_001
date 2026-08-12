@@ -545,6 +545,16 @@ uygulanıyor.
 
 ---
 
+## 2026-08-12 10:36 — "Şifremi Unuttum" Gerçek Mail ile Uçtan Uca Doğrulandı
+
+Daha önce tamamlanan şifre sıfırlama akışı, bu kez gerçek bir SMTP servisi (Mailtrap, test amaçlı
+bir e-posta sağlayıcısı) üzerinden baştan sona denendi: e-posta adresi girildi, sıfırlama maili
+gerçekten gönderildi, gelen bağlantıyla yeni şifre belirlendi ve yeni şifreyle giriş yapılabildiği
+doğrulandı. Daha önceki testler sıfırlama bağlantısını doğrudan veritabanından okuyarak
+yapılıyordu — artık gerçek mail gönderimi de çalıştığı kanıtlanmış oldu.
+
+---
+
 ## 🔜 Sıradaki Adımlar
 
 - [x] Web istemcisinin eklenmesi (aynı backend API üzerinden)
@@ -562,6 +572,6 @@ uygulanıyor.
 - [x] Web arayüzünün tasarım dilinin yenilenmesi (kurum geri bildirimi üzerine)
 - [x] Graylog üzerinde sistem izleme panosu (dashboard) kurulması
 - [ ] Üst menü/sekme yapısının DevExtreme'e taşınması (isteğe bağlı, henüz yapılmadı)
-- [x] "Şifremi Unuttum" akışı + e-posta ile şifre sıfırlama (gerçek mail testi için SMTP hesabı bekleniyor)
+- [x] "Şifremi Unuttum" akışı + e-posta ile şifre sıfırlama (gerçek mail testiyle doğrulandı)
 - [~] Çoklu dil desteği — altyapı + üst menü çevrildi, geri kalan ekranlar kademeli sürecek
 - [ ] Arayüz tasarımında "yapay zeka hissi"ni kırma çalışması (özellikle font seçimi)
