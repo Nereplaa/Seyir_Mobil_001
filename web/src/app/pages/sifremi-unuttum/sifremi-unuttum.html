@@ -1,65 +1,7 @@
-<div class="login-split">
-  <!-- Dil seçici - login.html ile AYNI (bilinçli kod tekrarı, bkz. sifremi-unuttum.css yorumu). -->
-  <dx-select-box
-    class="login-dil-secici"
-    [dataSource]="dilSecenekleri"
-    displayExpr="etiket"
-    valueExpr="kod"
-    [value]="dil.guncelDil"
-    (onValueChanged)="dilDegistir($event.value)"
-    width="72"
-  ></dx-select-box>
-
-  <!-- Sol panel login.html ile AYNI (bilinçli kod tekrarı - bkz. sifremi-unuttum.css yorumu). -->
-  <div class="login-nav">
-    <div class="login-brand">
-      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4" />
-        <path d="M15.5 8.5 L11 11 L8.5 15.5 L13 13 Z" fill="currentColor" />
-      </svg>
-      <div class="login-brand-wordmark">
-        <span class="login-brand-line">Seyir</span>
-        <span class="login-brand-line">Mobil</span>
-      </div>
-    </div>
-
-    <div class="login-route-wrap">
-      <svg viewBox="0 0 320 380" aria-hidden="true">
-        <path class="login-route-path" d="M160 340 C 100 280, 50 220, 30 80" />
-        <path class="login-route-path" d="M160 340 C 120 290, 90 220, 70 140" />
-        <path class="login-route-path" d="M160 340 C 140 300, 120 250, 110 200" />
-        <path class="login-route-path" d="M160 340 C 165 250, 160 150, 160 60" />
-        <path class="login-route-path" d="M160 340 C 180 300, 200 250, 210 190" />
-        <path class="login-route-path" d="M160 340 C 200 290, 230 220, 250 130" />
-        <path class="login-route-path" d="M160 340 C 220 280, 260 220, 290 70" />
-
-        <circle class="login-waypoint" cx="160" cy="340" r="5.5" />
-
-        <circle class="login-waypoint-pulse" cx="30" cy="80" r="6" />
-        <circle class="login-waypoint-current" cx="30" cy="80" r="5.5" />
-
-        <circle class="login-waypoint" cx="70" cy="140" r="4" />
-        <circle class="login-waypoint" cx="110" cy="200" r="4" />
-
-        <circle class="login-waypoint-pulse login-waypoint-pulse-2" cx="160" cy="60" r="6" />
-        <circle class="login-waypoint-current" cx="160" cy="60" r="5.5" />
-
-        <circle class="login-waypoint" cx="210" cy="190" r="4" />
-        <circle class="login-waypoint" cx="250" cy="130" r="4" />
-
-        <circle class="login-waypoint-pulse login-waypoint-pulse-3" cx="290" cy="70" r="6" />
-        <circle class="login-waypoint-current" cx="290" cy="70" r="5.5" />
-      </svg>
-    </div>
-
-    <div class="login-telemetry">
-      <div><strong>42</strong>{{ 'authOrtak.telemetriFilo' | translate }}</div>
-      <div><strong>2 dk</strong>{{ 'authOrtak.telemetriSenkron' | translate }}</div>
-    </div>
-  </div>
-
-  <!-- Sağ panel: e-posta iste / sonuç mesajı -->
-  <div class="login-form">
+<app-auth-arka-plan>
+  <!-- Sol: Flat Design "şifremi unuttum" formu - login.html ile AYNI kutu/stil (bkz.
+       sifremi-unuttum.css üst yorumu). -->
+  <div class="login-form-flat">
     @if (!gonderildi()) {
       <div>
         <h2>{{ 'sifremiUnuttum.baslik' | translate }}</h2>
@@ -68,27 +10,17 @@
 
       <div class="field">
         <label for="email">{{ 'sifremiUnuttum.email' | translate }}</label>
-        <dx-text-box
-          id="email"
-          mode="email"
-          [value]="email()"
-          (onValueChanged)="email.set($event.value ?? '')"
-          (onEnterKey)="gonder()"
-        ></dx-text-box>
+        <dx-text-box id="email" mode="email" [value]="email()" (onValueChanged)="email.set($event.value ?? '')"
+          (onEnterKey)="gonder()"></dx-text-box>
       </div>
 
       @if (hataMesaji()) {
-        <p class="error-text">{{ hataMesaji() }}</p>
+      <p class="error-text">{{ hataMesaji() }}</p>
       }
 
-      <dx-button
-        class="login-buton"
+      <dx-button class="login-buton"
         [text]="(gonderiliyor() ? 'sifremiUnuttum.gonderiliyor' : 'sifremiUnuttum.gonder') | translate"
-        type="default"
-        width="100%"
-        [disabled]="gonderiliyor()"
-        (onClick)="gonder()"
-      ></dx-button>
+        type="default" width="100%" [disabled]="gonderiliyor()" (onClick)="gonder()"></dx-button>
     } @else {
       <div>
         <h2>{{ 'sifremiUnuttum.kontrolEt' | translate }}</h2>
@@ -98,4 +30,4 @@
 
     <p class="login-form-foot"><a routerLink="/login">← {{ 'sifremiUnuttum.girisDon' | translate }}</a></p>
   </div>
-</div>
+</app-auth-arka-plan>

@@ -1,0 +1,173 @@
+/* ---------- Flat Design auth sahnesi (2026-08-13, login/şifremi-unuttum/şifre-sıfırla ORTAK) ---------- */
+/* Bu dosya, önceden login.css'te tanımlı olan (ve şifremi-unuttum/şifre-sıfırla'da BİREBİR
+   kopyalanan) sahne stillerinin TEK kaynağı - .login-form-flat (ve h2/field/buton/foot gibi
+   alt kuralları) BİLİNÇLİ OLARAK burada YOK: Angular'ın view encapsulation'ı, bu bileşenin
+   CSS'inden <ng-content> ile projekte edilen (başka bir component'in template'inde yazılmış)
+   elemanlara descendant selector ULAŞTIRMIYOR - o yüzden .login-form-flat kutusu her sayfanın
+   KENDİ CSS'inde küçük bir kopya olarak kalıyor (~55 satır, koddaki yorumlarla açıklandı).
+
+   position:fixed + inset:0 kullanılıyor (main'in kendi padding'ini negatif margin ile iptal etmek
+   yerine) - main'in padding'inden tamamen bağımsız olarak HER ZAMAN gerçek 100vw/100vh garanti
+   ediyor. */
+.login-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #0b1121;
+}
+
+/* ---------- Dil seçici - sağ üst köşe ---------- */
+.login-dil-secici {
+  position: absolute;
+  top: clamp(1rem, 3vw, 1.5rem);
+  right: clamp(1rem, 3vw, 1.5rem);
+  z-index: 12;
+}
+
+::ng-deep .login-dil-secici .dx-texteditor-input-container,
+::ng-deep .login-dil-secici.dx-texteditor {
+  background-color: transparent;
+}
+
+::ng-deep .login-dil-secici.dx-editor-outlined {
+  border-color: var(--ink-700);
+}
+
+::ng-deep .login-dil-secici .dx-texteditor-input {
+  color: var(--slate-300);
+}
+
+::ng-deep .login-dil-secici .dx-dropdowneditor-icon::before {
+  color: var(--slate-300);
+}
+
+/* ---------- Sol üst köşe: pusula logosu + marka yazısı (grafikten koparıldı, bkz. .route-origin) ---------- */
+.login-wordmark {
+  position: absolute;
+  top: 40px;
+  left: 8%;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  color: var(--paper-0);
+  pointer-events: none;
+}
+
+.login-wordmark-logo {
+  flex: none;
+  color: var(--route-500);
+}
+
+.login-wordmark-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-wordmark-line {
+  font-family: var(--font-display);
+  font-size: clamp(1.6rem, 3vw, 2.35rem);
+  font-weight: 700;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
+  text-transform: uppercase;
+}
+
+/* ---------- Sol alt köşe: telemetri istatistikleri ---------- */
+.login-telemetry-flat {
+  position: absolute;
+  bottom: 40px;
+  left: 8%;
+  z-index: 10;
+  display: flex;
+  gap: 2.5rem;
+  font-family: var(--font-mono);
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
+  color: var(--slate-300);
+  pointer-events: none;
+}
+
+.login-telemetry-flat strong {
+  display: block;
+  font-size: 2.1rem;
+  color: var(--paper-0);
+  font-weight: 600;
+  letter-spacing: 0;
+  margin-bottom: 0.2rem;
+}
+
+/* ---------- Kusursuz çember siluetli 10 kollu rota ağı (dekoratif arka plan) ---------- */
+.login-route-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* 10 ana kol (bazıları uç noktaya varmadan 2'ye dallanıyor) - iki ton (mavi/turkuaz) dönüşümlü
+   kullanılıyor, tek düz renk yerine hafif bir derinlik hissi için, ikisi de aynı "temaya uygun
+   soğuk ton" ailesinde. */
+.route-ray {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.route-ray-a {
+  stroke: rgba(0, 123, 255, 0.5);
+}
+
+.route-ray-b {
+  stroke: rgba(0, 200, 210, 0.42);
+}
+
+/* Rota uçlarındaki araç noktaları - turuncu/sarı, drop-shadow ile hafif "parlama". */
+.route-dot {
+  fill: #f5a623;
+  filter: drop-shadow(0 0 6px rgba(245, 166, 35, 0.75));
+}
+
+/* Pusula logosunun arkasındaki "plaka" - üzerinden geçen rota çizgilerinin görsel olarak
+   kesilmesini/karışmasını önlüyor. */
+.route-origin-plate {
+  fill: #0b1121;
+  stroke: rgba(28, 133, 179, 0.4);
+  stroke-width: 1.5;
+}
+
+.route-origin-mark {
+  color: var(--route-500);
+}
+
+/* ---------- Küçük ekranlar: sabit/mutlak yerleşim yerine sade dikey akış ---------- */
+/* .login-form-flat'ın kendi mobil override'ı burada DEĞİL - her sayfanın kendi CSS'inde
+   (aynı @media 760px kesme noktasıyla) tanımlı, bkz. dosyanın üst yorumu. */
+@media (max-width: 760px) {
+  .login-route-bg {
+    display: none;
+  }
+
+  .login-wordmark {
+    position: static;
+    align-items: center;
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  .login-telemetry-flat {
+    position: static;
+    justify-content: center;
+    margin: 0.5rem 0 1.5rem;
+  }
+
+  .login-canvas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+  }
+}

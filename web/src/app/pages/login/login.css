@@ -1,160 +1,10 @@
-/* ---------- Flat Design giriş ekranı (2026-08-13 tasarım kararı) ---------- */
-/* Tasarım vitrini (/tasarim-vitrini, artık kaldırıldı) üzerinden karşılaştırılan 6 stilden
-   "Flat Design" (düz beyaz form, gölgesiz, hafif yuvarlak köşe) seçildi - önceki split-screen
-   (sol/sağ iki panel) yerleşimi terk edilip yeni bir kompozisyona geçildi: koyu (#0b1121) tam
-   ekran zemin üzerinde sol tarafta sabit-konumlu form, sağ tarafta tam ekranı kaplayan dekoratif
-   bir rota ağı SVG'si, marka yazısı ve telemetri istatistikleri kendi köşelerinde ayrı ayrı.
-
-   position:fixed + inset:0 kullanılıyor (main'in kendi padding'ini negatif margin ile iptal etmek
-   yerine) - önceki split-screen turunda bu iptal deseni (bkz. git geçmişi) kırılgandı, fixed+inset
-   ise main'in padding'inden tamamen bağımsız olarak HER ZAMAN gerçek 100vw/100vh garanti ediyor. */
-.login-canvas {
-  position: fixed;
-  inset: 0;
-  width: 100vw;
-  height: 100vh;
-  overflow: hidden;
-  background-color: #0b1121;
-}
-
-/* ---------- Dil seçici - sağ üst köşe ---------- */
-.login-dil-secici {
-  position: absolute;
-  top: clamp(1rem, 3vw, 1.5rem);
-  right: clamp(1rem, 3vw, 1.5rem);
-  z-index: 12;
-}
-
-::ng-deep .login-dil-secici .dx-texteditor-input-container,
-::ng-deep .login-dil-secici.dx-texteditor {
-  background-color: transparent;
-}
-
-::ng-deep .login-dil-secici.dx-editor-outlined {
-  border-color: var(--ink-700);
-}
-
-::ng-deep .login-dil-secici .dx-texteditor-input {
-  color: var(--slate-300);
-}
-
-::ng-deep .login-dil-secici .dx-dropdowneditor-icon::before {
-  color: var(--slate-300);
-}
-
-/* ---------- Sol üst köşe: pusula logosu + marka yazısı (grafikten koparıldı, bkz. .route-origin) ---------- */
-.login-wordmark {
-  position: absolute;
-  top: 40px;
-  left: 8%;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  color: var(--paper-0);
-  pointer-events: none;
-}
-
-.login-wordmark-logo {
-  flex: none;
-  color: var(--route-500);
-}
-
-.login-wordmark-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.login-wordmark-line {
-  font-family: var(--font-display);
-  font-size: clamp(1.6rem, 3vw, 2.35rem);
-  font-weight: 700;
-  line-height: 0.95;
-  letter-spacing: -0.01em;
-  text-transform: uppercase;
-}
-
-/* ---------- Sol alt köşe: telemetri istatistikleri ---------- */
-/* Font boyutları eski split-screen halinden (0.72rem gövde / 1.05rem strong) bilinçli olarak
-   ~1.6-2 kat büyütüldü (kullanıcı isteği: "dikkat çekici hale getirilecek"). */
-.login-telemetry-flat {
-  position: absolute;
-  bottom: 40px;
-  left: 8%;
-  z-index: 10;
-  display: flex;
-  gap: 2.5rem;
-  font-family: var(--font-mono);
-  font-size: 1.15rem;
-  letter-spacing: 0.02em;
-  color: var(--slate-300);
-  pointer-events: none;
-}
-
-.login-telemetry-flat strong {
-  display: block;
-  font-size: 2.1rem;
-  color: var(--paper-0);
-  font-weight: 600;
-  letter-spacing: 0;
-  margin-bottom: 0.2rem;
-}
-
-/* ---------- Sağa yaslı asimetrik rota yelpazesi (dekoratif arka plan, 2026-08-13 4. tur) ---------- */
-/* SVG elemanının kendisi hâlâ tam ekran (inset:0) - ama bu BİLİNÇLİ bir tercih, "container'ı
-   forma ile sağ kenar arasına sıkıştır" isteğini KIRMIYOR: viewBox içindeki TÜM çizilebilir
-   içerik (pusula + 8 kol + tüm kontrol noktaları) x>=737 (viewBox 1200 üzerinden ~%61) ile
-   başlıyor - login formunun sağ kenarından (~x=496, ~%41) çok daha sağda, aradaki geniş boşluk
-   tamamen boş/şeffaf kalıyor. Container'ı gerçekten daraltıp viewBox'ı yeniden ölçeklemek yerine
-   bu yöntem tercih edildi - aynı görsel sonucu, koordinatları yeniden ölçeklemeden (ve hata
-   riskini artırmadan) veriyor. */
-.login-route-bg {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  z-index: 0;
-  pointer-events: none;
-}
-
-/* 8 bağımsız kol (bazıları uç noktaya varmadan 2'ye dallanıyor) - iki ton (mavi/turkuaz)
-   dönüşümlü kullanılıyor, tek düz renk yerine hafif bir derinlik hissi için, ikisi de aynı
-   "temaya uygun soğuk ton" ailesinde. */
-.route-ray {
-  fill: none;
-  stroke-width: 2;
-  stroke-linecap: round;
-}
-
-.route-ray-a {
-  stroke: rgba(0, 123, 255, 0.5);
-}
-
-.route-ray-b {
-  stroke: rgba(0, 200, 210, 0.42);
-}
-
-/* Rota uçlarındaki araç noktaları - turuncu/sarı, drop-shadow ile hafif "parlama". */
-.route-dot {
-  fill: #f5a623;
-  filter: drop-shadow(0 0 6px rgba(245, 166, 35, 0.75));
-}
-
-/* Pusula logosunun arkasındaki "plaka" - üzerinden geçen rota çizgilerinin görsel olarak
-   kesilmesini/karışmasını önlüyor. */
-.route-origin-plate {
-  fill: #0b1121;
-  stroke: rgba(28, 133, 179, 0.4);
-  stroke-width: 1.5;
-}
-
-.route-origin-mark {
-  color: var(--route-500);
-}
-
-/* ---------- Sol: Flat Design giriş formu ---------- */
-/* Flat Design: düz beyaz, gölgesiz, hafif yuvarlak köşe - DevExtreme'in kendi varsayılan
-   giriş elemanı stilleri (dx-text-box/dx-button) HİÇBİR ::ng-deep override ile ezilmiyor. */
+/* ---------- Flat Design giriş formu (2026-08-13) ---------- */
+/* Sahne (koyu zemin, dil seçici, marka yazısı, çember siluetli rota ağı, telemetri) artık
+   ORTAK bir bileşende (bkz. components/auth-arka-plan/) - burada SADECE bu sayfaya özgü form
+   kutusu tanımlı. .login-form-flat'ın kendisi her auth sayfasında (login/şifremi-unuttum/
+   şifre-sıfırla) küçük bir kopya olarak duruyor - Angular'ın view encapsulation'ı, üst
+   bileşenin (auth-arka-plan) CSS'inden <ng-content> ile projekte edilen bu içeriğe descendant
+   selector ULAŞTIRMADIĞI için (bkz. auth-arka-plan.css üst yorumu) bilinçli bir tercih. */
 .login-form-flat {
   position: absolute;
   top: 50%;
@@ -200,30 +50,9 @@
 }
 
 /* ---------- Küçük ekranlar: sabit/mutlak yerleşim yerine sade dikey akış ---------- */
+/* auth-arka-plan.css'teki AYNI kesme noktasıyla (760px) - .login-canvas orada zaten
+   flex-column'a geçiyor, burada sadece .login-form-flat'ın kendi statik/ortalanmış hâli. */
 @media (max-width: 760px) {
-  .login-route-bg {
-    display: none;
-  }
-
-  .login-wordmark {
-    position: static;
-    align-items: center;
-    margin: 1.5rem 0 0.5rem;
-  }
-
-  .login-telemetry-flat {
-    position: static;
-    justify-content: center;
-    margin: 0.5rem 0 1.5rem;
-  }
-
-  .login-canvas {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    overflow-y: auto;
-  }
-
   .login-form-flat {
     position: static;
     transform: none;

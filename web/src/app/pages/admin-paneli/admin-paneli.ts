@@ -152,11 +152,17 @@ export class AdminPaneli implements OnInit {
     });
   }
 
+  // 2026-08-13 QA turu: önceden dile göre değişen bir format kullanıyordu (tr-TR/en-US) -
+  // İngilizce'de AM/PM eklenince sütunu (width:170) taşırıp kesiliyordu (ekran görüntüsüyle
+  // bulundu). liste.ts/rapor.ts/import.ts'teki DİĞER TÜM formatTarih fonksiyonları zaten hep
+  // sabit DD.MM.YYYY kullanıyor, dile göre DEĞİŞMİYOR - admin paneli tek başına farklıydı,
+  // buradaki tek gerçek düzeltme bu tutarsızlığı gidermekti.
   formatTarih(iso: string): string {
-    const yerelAyar = this.translate.currentLang() === 'en' ? 'en-US' : 'tr-TR';
     const d = new Date(iso);
-    const tarih = d.toLocaleDateString(yerelAyar);
-    const saat = d.toLocaleTimeString(yerelAyar, { hour: '2-digit', minute: '2-digit' });
-    return `${tarih} ${saat}`;
+    const gun = String(d.getDate()).padStart(2, '0');
+    const ay = String(d.getMonth() + 1).padStart(2, '0');
+    const saat = String(d.getHours()).padStart(2, '0');
+    const dakika = String(d.getMinutes()).padStart(2, '0');
+    return `${gun}.${ay}.${d.getFullYear()} ${saat}:${dakika}`;
   }
 }

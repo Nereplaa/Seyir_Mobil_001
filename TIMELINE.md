@@ -684,6 +684,35 @@ merkezinde kullanılan pusula simgesinin küçük bir kopyası eklendi.
 Mobil Araç Takip" başlığı artık giriş ekranıyla aynı yeni fontu kullanıyor; önceden farklı
 (eski) bir yazı tipiyle görünüyordu.
 
+Gün boyunca biriken tüm bu giriş ekranı çalışması, kullanıcı onayıyla tek bir commit'te
+birleştirilip GitHub'a gönderildi.
+
+**Kapsam kontrolünde (12:55) gözden kaçan bir nokta bulundu ve düzeltildi:** "Şifremi Unuttum" ve
+"Yeni Şifre Belirle" ekranları, giriş ekranının bugünkü yeniden tasarımından hiç geçmemiş, hâlâ
+eski görünümde kalmışlardı. İkisi de artık giriş ekranıyla birebir aynı tasarımda. Bu üç ekranın
+ortak, tekrar eden görsel kısmı (rota ağı, marka yazısı, telemetri) kod tarafında da tek bir
+paylaşılan bileşene taşındı, böylece gelecekte bu tasarıma yapılacak bir değişiklik üç yerde ayrı
+ayrı değil, tek bir yerde yapılabilecek. Sonuç, gerçek bir tarayıcıda ekran görüntüleriyle
+doğrulandı.
+
+## 2026-08-13 13:51 — Uçtan Uca Test Turu: 2 Gerçek Hata Bulundu ve Düzeltildi
+
+Sistemin tamamı, gerçek bir kullanıcı gibi (giriş yapılarak, her ekran tek tek gezilerek, hem
+Türkçe hem İngilizce dilde) baştan sona test edildi. Bu tur sırasında iki gerçek sorun ortaya
+çıktı:
+
+1. **Yönetici panelindeki "Oluşturma Tarihi" sütunu İngilizce arayüzde kesiliyordu** — tarih
+   formatı diğer ekranlardan farklı bir mantık kullandığı için sığmıyordu. Diğer ekranlarla aynı,
+   sabit bir tarih biçimine geçilerek düzeltildi.
+2. **Araç hareket raporu ekranında, önce araç plakası seçilip sonra tarih aralığı değiştirildiğinde
+   "Rapor Oluştur" butonu pasif kalmaya devam ediyordu** — arka planda ekranın güncellenme
+   mantığındaki bir eksiklikten kaynaklanan gerçek bir yazılım hatasıydı. Bulunup düzeltildi ve
+   düzeltme, aynı adımlar tekrarlanarak gerçek tarayıcıda doğrulandı; rapor artık sorunsuz
+   oluşuyor.
+
+Test edilen diğer tüm ekranlarda (araç hareketleri listesi ve ekleme sihirbazı, Excel'den içe
+aktarma, yönetici paneli) başka bir sorun bulunmadı.
+
 ---
 
 ## 🔜 Sıradaki Adımlar

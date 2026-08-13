@@ -230,19 +230,26 @@ export class Rapor implements OnInit, OnDestroy {
     this.seciliPlakalar.update((arr) => arr.filter((p) => p !== plaka));
   }
 
-  baslangic = bugunIso();
-  bitis = yarinIso(bugunIso());
+  // 2026-08-13 QA turu: signal'a cevrildi - onceden duz alandi, "raporOlusturEtkin" computed'i
+  // SADECE gercek signal okumalarini (seciliPlakalar()) bagimlilik olarak izliyor, duz alan
+  // mutasyonlarini (this.baslangic = ...) HIC gormuyordu. Sonuc: kullanici once plakayi
+  // secip SONRA tarih araligini degistirirse, computed yeniden calismiyor ve "Rapor Olustur"
+  // butonu tarihler artik gecerliyken bile devre disi kalmaya devam ediyordu (gercek bug,
+  // Chrome'da manuel QA turunda bulundu - `window.ng.getComponent` ile computed'in "etkin:false"
+  // dondurdugu, ama baslangic/bitis'in ASLINDA dogru oldugu dogrudan gozlemlendi).
+  baslangic = signal(bugunIso());
+  bitis = signal(yarinIso(bugunIso()));
   detayliRapor = false;
 
   // dx-date-range-box'a baglanan Date alanlari - asil "kaynak" hala baslangic/bitis (ISO
-  // string) alanlari, rapor mantigi/export/backend cagrilari hepsi bu string'leri kullaniyor.
+  // string) signal'lari, rapor mantigi/export/backend cagrilari hepsi bu string'leri kullaniyor.
   // BILINCLI OLARAK getter/setter DEGIL, sabit alan: bir getter her change-detection turunda
   // "new Date(...)" ile YENI bir nesne dondurseydi, DevExtreme bunu "deger degisti" sanip
   // widget'i surekli yeniden baslatiyordu (gercek bug, ekranda ust uste yigilan onlarca takvim
   // olarak ortaya cikti) - sabit alan + degisiklikleri SADECE kullanici etkilesiminde (event
   // handler'larda) guncelleme, referans kararliligini koruyor.
-  baslangicDate: Date = isoToTarih(this.baslangic);
-  bitisDate: Date = isoToTarih(this.bitis);
+  baslangicDate: Date = isoToTarih(this.baslangic());
+  bitisDate: Date = isoToTarih(this.bitis());
 
   baslangicDateDegisti(deger: string | number | Date | null): void {
     if (deger == null) {
@@ -250,7 +257,7 @@ export class Rapor implements OnInit, OnDestroy {
     }
     const tarih = new Date(deger);
     this.baslangicDate = tarih;
-    this.baslangic = tarihToIso(tarih);
+    this.baslangic.set(tarihToIso(tarih));
     this.onBaslangicDegisti();
   }
 
@@ -260,7 +267,7 @@ export class Rapor implements OnInit, OnDestroy {
     }
     const tarih = new Date(deger);
     this.bitisDate = tarih;
-    this.bitis = tarihToIso(tarih);
+    this.bitis.set(tarihToIso(tarih));
   }
 
   ozetSonuclar = signal<AracRaporSonucuDto[]>([]);
@@ -269,7 +276,7 @@ export class Rapor implements OnInit, OnDestroy {
   yukleniyor = signal(false);
   statusText = signal('');
 
-  raporOlusturEtkin = computed(() => this.seciliPlakalar().length > 0 && this.bitis > this.baslangic);
+  raporOlusturEtkin = computed(() => this.seciliPlakalar().length > 0 && this.bitis() > this.baslangic());
 
   ngOnInit(): void {
     this.api.getPlakalar().subscribe({
@@ -283,10 +290,10 @@ export class Rapor implements OnInit, OnDestroy {
   }
 
   onBaslangicDegisti(): void {
-    const minBitis = yarinIso(this.baslangic);
-    if (this.bitis < minBitis) {
-      this.bitis = minBitis;
-      this.bitisDate = isoToTarih(this.bitis);
+    const minBitis = yarinIso(this.baslangic());
+    if (this.bitis() < minBitis) {
+      this.bitis.set(minBitis);
+      this.bitisDate = isoToTarih(this.bitis());
     }
   }
 
@@ -298,7 +305,7 @@ export class Rapor implements OnInit, OnDestroy {
 
     if (this.detayliRapor) {
       this.api
-        .getDetayRaporu({ plakalar, baslangic: this.baslangic, bitis: this.bitis })
+        .getDetayRaporu({ plakalar, baslangic: this.baslangic(), bitis: this.bitis() })
         .subscribe({
           next: (satirlar) => {
             this.detaySonuclar.set(satirlar);
@@ -310,7 +317,7 @@ export class Rapor implements OnInit, OnDestroy {
         });
     } else {
       this.api
-        .getRaporToplu({ plakalar, baslangic: this.baslangic, bitis: this.bitis })
+        .getRaporToplu({ plakalar, baslangic: this.baslangic(), bitis: this.bitis() })
         .subscribe({
           next: (sonuclar) => {
             this.ozetSonuclar.set(sonuclar);

@@ -1,202 +1,26 @@
-/* login.css'in AYNI split-screen kabuğunun kopyası - bilinçli kod tekrarı (2026-08-11).
-   Angular component stilleri birbirine izole (ViewEncapsulation), 3 farklı auth ekranı
-   (login, şifremi unuttum, şifre sıfırla) arasında bunu paylaşmanın tek riski DÜŞÜK
-   olmayan bir yolu (global styles.css'e taşımak + login.html'i de değiştirmek) mevcut,
-   test edilmiş login ekranına dokunma riski taşıdığı için TERCİH EDİLMEDİ - üç sayfa
-   arasında görsel tutarlılık, üç ayrı (ama küçük, ~200 satır) kopya CSS ile korunuyor. */
-.login-split {
-  position: relative;
-  margin: -1.25rem -1.5rem;
-  min-height: 100vh;
-  display: flex;
-  align-items: stretch;
-  /* Sayfa aynalandı (2026-08-12) - login.css ile AYNI (bilinçli kod tekrarı). */
-  flex-direction: row-reverse;
-}
-
-/* Dil seçici - login.css ile AYNI (bilinçli kod tekrarı, bkz. dosyanın üst yorumu). */
-.login-dil-secici {
+/* ---------- Flat Design "yeni şifre belirle" formu (2026-08-13) ---------- */
+/* login.css ile AYNI (bilinçli kod tekrarı - sahne artık ORTAK bir bileşende, bkz.
+   components/auth-arka-plan/, ama .login-form-flat kutusunun kendisi Angular'ın view
+   encapsulation'ı yüzünden üst bileşenden buraya CSS ile ulaşamıyor, bkz. auth-arka-plan.css
+   üst yorumu). */
+.login-form-flat {
   position: absolute;
-  top: clamp(1rem, 3vw, 1.5rem);
-  right: clamp(1rem, 3vw, 1.5rem);
-  z-index: 5;
-}
-
-::ng-deep .login-dil-secici .dx-texteditor-input-container,
-::ng-deep .login-dil-secici.dx-texteditor {
-  background-color: transparent;
-}
-
-::ng-deep .login-dil-secici.dx-editor-outlined {
-  border-color: var(--ink-700);
-}
-
-::ng-deep .login-dil-secici .dx-texteditor-input {
-  color: var(--slate-300);
-}
-
-::ng-deep .login-dil-secici .dx-dropdowneditor-icon::before {
-  color: var(--slate-300);
-}
-
-.login-split .login-nav {
-  flex: 1.5;
-  min-width: 0;
-}
-
-.login-split .login-form {
-  flex: 1;
-  min-width: 0;
-}
-
-@media (max-width: 760px) {
-  .login-split {
-    flex-direction: column;
-    min-height: 0;
-  }
-}
-
-.login-nav {
-  position: relative;
-  background-color: var(--ink-950);
-  color: var(--slate-200);
-  padding: clamp(1.75rem, 4vw, 3rem);
+  top: 50%;
+  left: 8%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: min(400px, 84vw);
+  background-color: #ffffff;
+  box-shadow: none;
+  border-radius: 10px;
+  padding: clamp(2rem, 4vw, 2.75rem) clamp(1.75rem, 3.5vw, 2.25rem);
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
-  background-image:
-    repeating-linear-gradient(0deg, rgba(127, 196, 224, 0.032) 0 1px, transparent 1px 56px),
-    repeating-linear-gradient(90deg, rgba(127, 196, 224, 0.032) 0 1px, transparent 1px 56px);
+  gap: 1.5rem;
 }
 
-/* Büyük logo (2026-08-12) - login.css ile AYNI (bilinçli kod tekrarı). */
-.login-brand {
-  display: flex;
-  align-items: center;
-  gap: 0.9rem;
-  color: var(--paper-0);
-}
-
-.login-brand-wordmark {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-}
-
-.login-brand-line {
-  font-family: var(--font-display);
-  font-size: clamp(2.1rem, 4.5vw, 3rem);
-  font-weight: 700;
-  line-height: 0.9;
-  letter-spacing: -0.015em;
-  text-transform: uppercase;
-}
-
-.login-brand svg {
-  flex: none;
-  color: var(--route-500);
-}
-
-.login-route-wrap {
-  position: relative;
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem 0;
-}
-
-.login-route-wrap svg {
-  width: 100%;
-  max-width: 380px;
-  height: auto;
-}
-
-.login-route-path {
-  fill: none;
-  stroke: var(--route-500);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  opacity: 0.75;
-}
-
-.login-waypoint {
-  fill: var(--ink-950);
-  stroke: var(--slate-300);
-  stroke-width: 1.4;
-}
-
-.login-waypoint-current {
-  fill: var(--waypoint-500);
-  stroke: var(--waypoint-500);
-}
-
-.login-waypoint-pulse {
-  fill: none;
-  stroke: var(--waypoint-500);
-  stroke-width: 1.2;
-  opacity: 0.55;
-  transform-origin: center;
-  animation: login-pulse 2.4s ease-out infinite;
-}
-
-.login-waypoint-pulse-2 {
-  animation-delay: -0.8s;
-}
-
-.login-waypoint-pulse-3 {
-  animation-delay: -1.6s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .login-waypoint-pulse {
-    animation: none;
-    opacity: 0;
-  }
-}
-
-@keyframes login-pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.55;
-  }
-  100% {
-    transform: scale(2.3);
-    opacity: 0;
-  }
-}
-
-.login-telemetry {
-  display: flex;
-  gap: 1.75rem;
-  font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  color: var(--slate-300);
-}
-
-.login-telemetry strong {
-  display: block;
-  font-size: 1.05rem;
-  color: var(--paper-0);
-  font-weight: 600;
-  letter-spacing: 0;
-  margin-bottom: 0.15rem;
-}
-
-.login-form {
-  background-color: var(--paper-0);
-  padding: clamp(2rem, 5vw, 3.25rem) clamp(1.75rem, 4vw, 2.75rem);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 1.6rem;
-}
-
-.login-form h2 {
+.login-form-flat h2 {
   margin: 0;
-  /* login.css ile AYNI (bilinçli kod tekrarı, bkz. dosyanın üst yorumu) - Clash Display büyütüldü. */
   font-size: 1.65rem;
   font-weight: 600;
   color: var(--ink-900);
@@ -209,16 +33,12 @@
   color: var(--ink-700);
 }
 
-.login-form .field {
+.login-form-flat .field {
   gap: 0.4rem;
 }
 
 .login-buton {
   margin-top: 0.4rem;
-}
-
-.login-form ::ng-deep .dx-texteditor.dx-editor-outlined {
-  background-color: var(--paper-50);
 }
 
 .login-form-foot {
@@ -227,11 +47,11 @@
   color: var(--ink-500);
 }
 
-.login-form-foot a {
-  color: var(--route-600);
-  text-decoration: none;
-}
-
-.login-form-foot a:hover {
-  text-decoration: underline;
+@media (max-width: 760px) {
+  .login-form-flat {
+    position: static;
+    transform: none;
+    width: min(400px, 90vw);
+    margin: 0 auto;
+  }
 }
