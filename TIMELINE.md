@@ -613,6 +613,79 @@ Gün burada tamamlandı, tasarım kararı yarın netleştirilecek.
 
 ---
 
+## 2026-08-13 11:09 — Giriş Ekranı Tasarım Kararı Uygulandı: Flat Design
+
+Mesai 09:00'da başladı; saat 11:00'e kadar geçen sürede bir önceki gün hazırlanan karşılaştırma
+sayfasındaki 6 stil (Solid Dark, Flat, Material, Minimalist, Neo-Brutalism, Dark Neumorphism)
+üzerinde araştırma/inceleme yapılıp tercihler tartılarak nihai karara varıldı — bu, dışarıdan
+"boş" görünen bir aralık değil, tasarım kararının kendisiydi.
+
+Sonucunda **Flat Design** (düz beyaz form, gölgesiz, hafif yuvarlak köşe) seçildi ve giriş
+ekranına kalıcı olarak uygulandı; geçici karşılaştırma sayfası kaldırıldı. Giriş ekranının
+yerleşimi de yeniden kurgulandı: koyu (tam ekran) bir zemin üzerinde solda sabit konumlu giriş
+formu, sağ tarafta ekranı kaplayan, marka logosundan (pusula) dağılan, araçları temsil eden
+noktalarla biten bir rota ağı grafiği; marka yazısı sol üstte, filo istatistikleri (araç sayısı,
+senkron süresi) sol altta, önceki hallerine göre belirgin şekilde büyütülmüş punto ile.
+
+Rota grafiği kısa süre sonra (11:15) bir geri bildirimle inceltildi: ilk versiyonda pusuladan
+doğrudan 8 ayrı çizgi çıkıyordu, bunun yerine **dallanan (ağaç kökü/nehir deltası benzeri)** bir
+yapıya geçildi — pusuladan sadece 3 ana kol çıkıyor, her kol ekranın ortasında 2-3 alt dala
+ayrılıp sağ kenara kadar yumuşak eğrilerle uzanıyor. Aynı zamanda grafiğin ekran dışına taşmaması
+(üstten/alttan boşluk payı) ve sağ boşluğu tam doldurması da bu turda kesinleştirildi.
+
+Hemen ardından (11:23) konsept üçüncü kez değişti: dallanan ağaç yapısı da bırakılıp, pusula
+logosu ekranın **tam geometrik merkezine** alındı, oradan dallanma olmadan **8 bağımsız yönde**
+(kuzey, kuzeydoğu, doğu, güneydoğu, güney, güneybatı, batı, kuzeybatı) dalgalı/kıvrımlı çizgiler
+360 derece yayılan bir "trafik/harita ağı" görünümü oluşturuyor. Sol taraftaki form, marka yazısı
+ve istatistik metinleri her zaman en üst katmanda kalıyor; sola giden çizgiler formun arkasından
+geçiyor.
+
+Dördüncü turda (11:40) yön tamamen değişti: pusula artık formun **arkasına hiç girmiyor** — sağ
+taraftaki boş alanın merkezine kaydırıldı, oradan çıkan 8 kol SADECE sağa/yukarı/aşağı yöne
+(yarım ay/yelpaze şeklinde) yayılıyor, uzunlukları bilinçli olarak asimetrik/organik (kısa ve uzun
+kollar karışık). En uzun 3 kol, uçlarına varmadan önce ikişer alt kola dallanıp toplam 11 uç
+noktada (araç temsilcisi, parlayan turuncu noktalar) sonlanıyor; dalgalanma bir önceki turdan daha
+belirgin.
+
+Beşinci turda (11:46) yaklaşım yeniden birleştirildi: pusula sağ taraftaki konumunu koruyor, ama
+grafik tekrar **360 derece tüm yönlere** (kuzey, kuzeydoğu, doğu, güneydoğu, güney, güneybatı,
+batı, kuzeybatı) yayılıyor. Formun bulunduğu yöne bakan üç kol (batı, kuzeybatı, güneybatı)
+bilinçli olarak kısa tutulup formdan güvenli bir mesafede bitiyor, diğer beş kol ise ekran
+kenarlarına kadar uzuyor — böylece hem tam çevresel bir ağ görünümü hem de formun asla
+örtülmemesi garantisi bir arada sağlanıyor.
+
+**Konsept burada onaylandı (11:53).** Altıncı tur artık yön değişikliği değil, ince ayar: çizim
+alanı kesin sınırlarla tanımlandı (üstten/sağdan/alttan ekranın %5'i, soldan ise formun bittiği
+noktadan itibaren %5) ve kollar bu alanı tam doldurup taşmayacak şekilde yeniden ölçeklendi. Kısa
+kollar tamamen kaldırıldı; sekiz kolun uzunluğu artık **Orta-Uzun** sırasıyla dönüşümlü — uzun
+kollar kendi yönündeki sınıra tam değiyor, orta kollar o mesafenin yaklaşık üçte ikisinde kalıyor.
+
+Yedinci turda (12:06) "orta-uzun" ayrımı tamamen kaldırıldı: kol sayısı **10'a** çıkarıldı,
+hepsi artık uzun ve kendi sınırına değiyor; aralarındaki açı standart/eşit değil, 32°-48° arasında
+asimetrik dağıtıldı; 5 kol (önceki 3 değil) uçlarına varmadan ikişer alt kola ayrılıp toplam 15
+uç noktaya çıkıldı.
+
+Sekizinci turda (12:12) küçük ama gözle görülür bir düzeltme yapıldı: bazı uçların sabit yarıçaplı
+bir çember üzerindeymiş gibi durup sağ/sol kenarlarda boşluk bıraktığı fark edildi. Kuzey ve güney
+yönleri hiç değiştirilmeden, sağa ve sola bakan birkaç kolun ucu doğrudan ekranın sağ/sol kenarına
+değecek şekilde yeniden hesaplandı.
+
+Dokuzuncu turda (12:23) yaklaşım kökten değişti: dikdörtgen kenarlara göre hesaplama tamamen
+bırakıldı, yerine pusulanın etrafında **kusursuz, tam bir çember** kuruldu — tüm on kolun ve
+dallanan uçların tamamı artık bu tek çemberin üzerinde bitiyor. Çemberin merkezi ve yarıçapı,
+giriş formu ile ekranın sağ kenarı arasındaki boşluğa tam sığacak, hiçbir kenardan taşmayacak
+şekilde hesaplandı; dallanma noktaları da artık daha yumuşak/teğet bir geçişle ayrılıyor.
+
+**Rota grafiği burada (12:27) kesinleşti** — sağdaki ağ, giriş formu ve genel yerleşim son hâlini
+aldı. Son dokunuş olarak, sol üst köşedeki "Seyir Mobil" marka yazısının yanına, sağdaki ağın
+merkezinde kullanılan pusula simgesinin küçük bir kopyası eklendi.
+
+**Üst menü çubuğunun fontu da (12:30) güncellendi** — tüm iç ekranların üstünde görünen "Seyir
+Mobil Araç Takip" başlığı artık giriş ekranıyla aynı yeni fontu kullanıyor; önceden farklı
+(eski) bir yazı tipiyle görünüyordu.
+
+---
+
 ## 🔜 Sıradaki Adımlar
 
 - [x] Web istemcisinin eklenmesi (aynı backend API üzerinden)
@@ -632,6 +705,6 @@ Gün burada tamamlandı, tasarım kararı yarın netleştirilecek.
 - [ ] Üst menü/sekme yapısının DevExtreme'e taşınması (isteğe bağlı, henüz yapılmadı)
 - [x] "Şifremi Unuttum" akışı + e-posta ile şifre sıfırlama (gerçek mail testiyle doğrulandı)
 - [x] Çoklu dil desteği — tüm ekranlar İngilizce/Türkçe arasında geçiş yapabiliyor
-- [~] Arayüz tasarımında "yapay zeka hissi"ni kırma çalışması — yeni fontlar seçilip entegre
-      edildi, giriş ekranı yeniden tasarlandı; nihai görsel stil kararı için karşılaştırma
-      sayfası hazırlandı, karar henüz verilmedi
+- [x] Arayüz tasarımında "yapay zeka hissi"ni kırma çalışması — yeni fontlar entegre edildi,
+      giriş ekranı karşılaştırma sayfası üzerinden değerlendirilip Flat Design'a karar verildi
+      ve uygulandı

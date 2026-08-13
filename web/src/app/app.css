@@ -33,21 +33,39 @@
   flex: none;
 }
 
-.app-header h1 {
-  font-family: var(--font-mono);
-  font-size: 0.95rem;
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  text-transform: uppercase;
+/* 2026-08-13: login ekranındaki iki satırlı marka yazısıyla (bkz. login.css
+   .login-wordmark/.login-wordmark-line) AYNI yapı/font/stil - "Seyir" üstte, "Mobil" altta,
+   header'a sığacak kadar küçültülmüş punotla. Önceden tek satırlık "Seyir Mobil" bir <h1>'di. */
+.brand-wordmark {
+  display: flex;
+  flex-direction: column;
   margin: 0;
+  line-height: 0.95;
+}
+
+.brand-line {
+  /* 2026-08-13: kullanıcı "çok küçük oldu, Araç Takip ile aynı boyda olsun" dedi - punto
+     0.62rem'den .brand-sub ile AYNI değere (0.95rem) çıkarıldı, header biraz yükselmesi
+     gerekiyorsa sorun değil (kullanıcının açık isteği). */
+  font-family: var(--font-display);
+  font-size: 0.95rem;
+  font-weight: 700;
+  letter-spacing: 0.01em;
+  text-transform: uppercase;
   white-space: nowrap;
   color: var(--paper-0);
 }
 
+/* "Araç Takip" - önceden h1 içine iç içeydi (font-display/uppercase h1'den miras alıyordu),
+   artık .brand-wordmark'ın yanında bağımsız bir eleman olduğu için görünümü (font/boyut/harf
+   aralığı) DEĞİŞMEDEN elle korundu. */
 .brand-sub {
+  font-family: var(--font-display);
+  font-size: 0.95rem;
   font-weight: 400;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
   color: var(--slate-300);
-  margin-left: 0.35rem;
 }
 
 .app-header nav {

@@ -9,7 +9,14 @@
         <circle cx="12" cy="12" r="9.5" stroke="currentColor" stroke-width="1.4" />
         <path d="M15.5 8.5 L11 11 L8.5 15.5 L13 13 Z" fill="currentColor" />
       </svg>
-      <h1>Seyir Mobil <span class="brand-sub">Araç Takip</span></h1>
+      <!-- 2026-08-13: login ekranındaki iki satırlı "Seyir" üstte / "Mobil" altta marka yazısıyla
+           (bkz. login.css .login-wordmark-line) AYNI font/stil - burada sadece header'a sığacak
+           kadar küçültülmüş punto ile. -->
+      <h1 class="brand-wordmark">
+        <span class="brand-line">Seyir</span>
+        <span class="brand-line">Mobil</span>
+      </h1>
+      <span class="brand-sub">Araç Takip</span>
     </div>
     <nav>
       <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'nav.hareketler' | translate }}</a>

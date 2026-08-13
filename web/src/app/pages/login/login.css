@@ -1,37 +1,28 @@
-/* ---------- Tam sayfa split-screen giriş ekranı (2026-08-07 tasarım turu) ---------- */
-/* Eren bey geri bildirimi: ortalanmış tek "kart" jenerik component kütüphanelerinin imzasıydı.
-   Bunun yerine ekranın tamamını kullanan asimetrik bir bölünme: sol %60 koyu lacivert "rota"
-   paneli, sağ %40 form. Onaylanmış mockup: seyir-login-mockup.html (birebir referans).
+/* ---------- Flat Design giriş ekranı (2026-08-13 tasarım kararı) ---------- */
+/* Tasarım vitrini (/tasarim-vitrini, artık kaldırıldı) üzerinden karşılaştırılan 6 stilden
+   "Flat Design" (düz beyaz form, gölgesiz, hafif yuvarlak köşe) seçildi - önceki split-screen
+   (sol/sağ iki panel) yerleşimi terk edilip yeni bir kompozisyona geçildi: koyu (#0b1121) tam
+   ekran zemin üzerinde sol tarafta sabit-konumlu form, sağ tarafta tam ekranı kaplayan dekoratif
+   bir rota ağı SVG'si, marka yazısı ve telemetri istatistikleri kendi köşelerinde ayrı ayrı.
 
-   main'in kendi padding'i (bkz. app.css, 1.25rem 1.5rem) negatif margin ile iptal edilip panel
-   kenarlara kadar yayılıyor. 2026-08-07 düzeltme (3. tur): CSS Grid'den FLEX'e geçildi - tek
-   implicit satırlı bir grid container'da `min-height` verilse bile satırın (auto boyutlu) bu
-   fazladan alana GERÇEKTEN uzayacağı garanti değildi (tarayıcıda doğrulandı: panel sadece içeriği
-   kadar yükseklikte kalıp altında büyük boş alan bırakıyordu). Flex + `align-items: stretch`
-   (varsayılan) bu tür "iki yan yana panel, ikisi de TAM yükseklik" deseninde çok daha güvenilir -
-   zaten :host/main'de aynı sebeple flex kullanılıyor (bkz. app.css). */
-.login-split {
-  position: relative;
-  margin: -1.25rem -1.5rem;
-  min-height: 100vh;
-  display: flex;
-  align-items: stretch;
-  /* Sayfa aynalandı (2026-08-12, kullanıcı isteği): koyu marka paneli artık SAĞDA, form SOLDA -
-     DOM sırası (nav sonra form) BİLİNÇLİ OLARAK değiştirilmedi, sadece görsel sıra flex ile ters
-     çevrildi (klavye/tab sırası formdan başlıyor gibi davranmaya devam ediyor - nav panelinde
-     zaten odaklanabilir bir eleman yok, aria-hidden svg hariç). */
-  flex-direction: row-reverse;
+   position:fixed + inset:0 kullanılıyor (main'in kendi padding'ini negatif margin ile iptal etmek
+   yerine) - önceki split-screen turunda bu iptal deseni (bkz. git geçmişi) kırılgandı, fixed+inset
+   ise main'in padding'inden tamamen bağımsız olarak HER ZAMAN gerçek 100vw/100vh garanti ediyor. */
+.login-canvas {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
+  background-color: #0b1121;
 }
 
-/* Dil seçici - sağ üst köşe, sayfanın geri kalanından bağımsız sabit bir konumda (2026-08-12).
-   Aynalama sonrası bu köşe artık KOYU marka panelinin üzerine düşüyor - dx-select-box'ın
-   varsayılan açık zemin rengi koyu zeminde uyumsuz duruyordu, header'daki .dil-secici ile AYNI
-   ::ng-deep tekniğiyle düzeltildi (aşağıda). */
+/* ---------- Dil seçici - sağ üst köşe ---------- */
 .login-dil-secici {
   position: absolute;
   top: clamp(1rem, 3vw, 1.5rem);
   right: clamp(1rem, 3vw, 1.5rem);
-  z-index: 5;
+  z-index: 12;
 }
 
 ::ng-deep .login-dil-secici .dx-texteditor-input-container,
@@ -51,177 +42,137 @@
   color: var(--slate-300);
 }
 
-.login-split .login-nav {
-  flex: 1.5;
-  min-width: 0;
-}
-
-.login-split .login-form {
-  flex: 1;
-  min-width: 0;
-}
-
-@media (max-width: 760px) {
-  .login-split {
-    flex-direction: column;
-    min-height: 0;
-  }
-}
-
-/* ---------- Sol panel: rota / enstrüman paneli ---------- */
-.login-nav {
-  position: relative;
-  background-color: var(--ink-950);
-  color: var(--slate-200);
-  padding: clamp(1.75rem, 4vw, 3rem);
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
-  overflow: hidden;
-  /* Login mockup'ındaki AYNI doku tekniği (repeating-linear-gradient) - burada koyu zemine göre
-     daha belirgin bir opaklıkta (bkz. app.css'teki çok daha soluk açık-zemin versiyonu). */
-  background-image:
-    repeating-linear-gradient(0deg, rgba(127, 196, 224, 0.032) 0 1px, transparent 1px 56px),
-    repeating-linear-gradient(90deg, rgba(127, 196, 224, 0.032) 0 1px, transparent 1px 56px);
-}
-
-/* Logo (2026-08-12 büyütme turu, kullanıcı isteği): "Seyir" üstte, "Mobil" altta, sola YAPIŞIK
-   (flex-direction:column + align-items:flex-start), Clash Display ile - genel başlık kimliğiyle
-   AYNI font (font-mono DEĞİL, eski küçük tek-satır mono marka buradaydı). Panelin bol
-   padding'i (clamp(1.75rem,4vw,3rem)) sayesinde header'daki kısıtlı versiyonundan çok daha
-   büyük olabiliyor. */
-.login-brand {
+/* ---------- Sol üst köşe: pusula logosu + marka yazısı (grafikten koparıldı, bkz. .route-origin) ---------- */
+.login-wordmark {
+  position: absolute;
+  top: 40px;
+  left: 8%;
+  z-index: 10;
   display: flex;
   align-items: center;
-  gap: 0.9rem;
+  gap: 12px;
   color: var(--paper-0);
+  pointer-events: none;
 }
 
-.login-brand svg {
+.login-wordmark-logo {
   flex: none;
   color: var(--route-500);
 }
 
-.login-brand-wordmark {
+.login-wordmark-text {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
 }
 
-.login-brand-line {
+.login-wordmark-line {
   font-family: var(--font-display);
-  font-size: clamp(2.1rem, 4.5vw, 3rem);
+  font-size: clamp(1.6rem, 3vw, 2.35rem);
   font-weight: 700;
-  line-height: 0.9;
-  letter-spacing: -0.015em;
+  line-height: 0.95;
+  letter-spacing: -0.01em;
   text-transform: uppercase;
 }
 
-.login-route-wrap {
-  position: relative;
-  flex: 1;
+/* ---------- Sol alt köşe: telemetri istatistikleri ---------- */
+/* Font boyutları eski split-screen halinden (0.72rem gövde / 1.05rem strong) bilinçli olarak
+   ~1.6-2 kat büyütüldü (kullanıcı isteği: "dikkat çekici hale getirilecek"). */
+.login-telemetry-flat {
+  position: absolute;
+  bottom: 40px;
+  left: 8%;
+  z-index: 10;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 1.5rem 0;
-}
-
-.login-route-wrap svg {
-  width: 100%;
-  max-width: 380px;
-  height: auto;
-}
-
-.login-route-path {
-  fill: none;
-  stroke: var(--route-500);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  opacity: 0.75;
-}
-
-.login-waypoint {
-  fill: var(--ink-950);
-  stroke: var(--slate-300);
-  stroke-width: 1.4;
-}
-
-.login-waypoint-current {
-  fill: var(--waypoint-500);
-  stroke: var(--waypoint-500);
-}
-
-.login-waypoint-pulse {
-  fill: none;
-  stroke: var(--waypoint-500);
-  stroke-width: 1.2;
-  opacity: 0.55;
-  transform-origin: center;
-  animation: login-pulse 2.4s ease-out infinite;
-}
-
-/* Her aracın pulse'ı birbirinden kaydırıldı - hepsi aynı anda atmasın, BAĞIMSIZ araçlar
-   hissi güçlensin diye. */
-.login-waypoint-pulse-2 {
-  animation-delay: -0.8s;
-}
-
-.login-waypoint-pulse-3 {
-  animation-delay: -1.6s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .login-waypoint-pulse {
-    animation: none;
-    opacity: 0;
-  }
-}
-
-@keyframes login-pulse {
-  0% {
-    transform: scale(1);
-    opacity: 0.55;
-  }
-  100% {
-    transform: scale(2.3);
-    opacity: 0;
-  }
-}
-
-.login-telemetry {
-  display: flex;
-  gap: 1.75rem;
+  gap: 2.5rem;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
+  font-size: 1.15rem;
+  letter-spacing: 0.02em;
   color: var(--slate-300);
+  pointer-events: none;
 }
 
-.login-telemetry strong {
+.login-telemetry-flat strong {
   display: block;
-  font-size: 1.05rem;
+  font-size: 2.1rem;
   color: var(--paper-0);
   font-weight: 600;
   letter-spacing: 0;
-  margin-bottom: 0.15rem;
+  margin-bottom: 0.2rem;
 }
 
-/* ---------- Sağ panel: giriş formu ---------- */
-.login-form {
-  background-color: var(--paper-0);
-  padding: clamp(2rem, 5vw, 3.25rem) clamp(1.75rem, 4vw, 2.75rem);
+/* ---------- Sağa yaslı asimetrik rota yelpazesi (dekoratif arka plan, 2026-08-13 4. tur) ---------- */
+/* SVG elemanının kendisi hâlâ tam ekran (inset:0) - ama bu BİLİNÇLİ bir tercih, "container'ı
+   forma ile sağ kenar arasına sıkıştır" isteğini KIRMIYOR: viewBox içindeki TÜM çizilebilir
+   içerik (pusula + 8 kol + tüm kontrol noktaları) x>=737 (viewBox 1200 üzerinden ~%61) ile
+   başlıyor - login formunun sağ kenarından (~x=496, ~%41) çok daha sağda, aradaki geniş boşluk
+   tamamen boş/şeffaf kalıyor. Container'ı gerçekten daraltıp viewBox'ı yeniden ölçeklemek yerine
+   bu yöntem tercih edildi - aynı görsel sonucu, koordinatları yeniden ölçeklemeden (ve hata
+   riskini artırmadan) veriyor. */
+.login-route-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* 8 bağımsız kol (bazıları uç noktaya varmadan 2'ye dallanıyor) - iki ton (mavi/turkuaz)
+   dönüşümlü kullanılıyor, tek düz renk yerine hafif bir derinlik hissi için, ikisi de aynı
+   "temaya uygun soğuk ton" ailesinde. */
+.route-ray {
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+}
+
+.route-ray-a {
+  stroke: rgba(0, 123, 255, 0.5);
+}
+
+.route-ray-b {
+  stroke: rgba(0, 200, 210, 0.42);
+}
+
+/* Rota uçlarındaki araç noktaları - turuncu/sarı, drop-shadow ile hafif "parlama". */
+.route-dot {
+  fill: #f5a623;
+  filter: drop-shadow(0 0 6px rgba(245, 166, 35, 0.75));
+}
+
+/* Pusula logosunun arkasındaki "plaka" - üzerinden geçen rota çizgilerinin görsel olarak
+   kesilmesini/karışmasını önlüyor. */
+.route-origin-plate {
+  fill: #0b1121;
+  stroke: rgba(28, 133, 179, 0.4);
+  stroke-width: 1.5;
+}
+
+.route-origin-mark {
+  color: var(--route-500);
+}
+
+/* ---------- Sol: Flat Design giriş formu ---------- */
+/* Flat Design: düz beyaz, gölgesiz, hafif yuvarlak köşe - DevExtreme'in kendi varsayılan
+   giriş elemanı stilleri (dx-text-box/dx-button) HİÇBİR ::ng-deep override ile ezilmiyor. */
+.login-form-flat {
+  position: absolute;
+  top: 50%;
+  left: 8%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: min(400px, 84vw);
+  background-color: #ffffff;
+  box-shadow: none;
+  border-radius: 10px;
+  padding: clamp(2rem, 4vw, 2.75rem) clamp(1.75rem, 3.5vw, 2.25rem);
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  gap: 1.6rem;
+  gap: 1.5rem;
 }
 
-.login-form h2 {
+.login-form-flat h2 {
   margin: 0;
-  /* Clash Display'in "buyuk anlarda gur ses" karakteri burada gosterilsin diye bir onceki
-     (sistem fontuyla kalibre edilmis, 1.3rem) boyuttan buyutuldu - font-kit'in onerdigi tracking
-     (-0.02/-0.03em araligi) ve YUKLENEN agirliklardan biri (400/600/700 - Fontshare'den bu
-     uculu istendi, ara bir deger olan "650" tarayicida sentezleniyordu) kullaniliyor. */
   font-size: 1.65rem;
   font-weight: 600;
   color: var(--ink-900);
@@ -234,7 +185,7 @@
   color: var(--ink-700);
 }
 
-.login-form .field {
+.login-form-flat .field {
   gap: 0.4rem;
 }
 
@@ -242,15 +193,41 @@
   margin-top: 0.4rem;
 }
 
-/* Spesifikasyon: login'deki input dolgusu iç ekranlardan (--paper-0, bkz. styles.css global
-   override) farklı olarak --paper-50 - ::ng-deep ile bileşenin iç DOM'una ulaşılıyor, seçici
-   (component-scope attr + 3 sınıf) global override'dan daha özgül olduğu için kazanıyor. */
-.login-form ::ng-deep .dx-texteditor.dx-editor-outlined {
-  background-color: var(--paper-50);
-}
-
 .login-form-foot {
   margin: 0;
   font-size: 0.76rem;
   color: var(--ink-500);
+}
+
+/* ---------- Küçük ekranlar: sabit/mutlak yerleşim yerine sade dikey akış ---------- */
+@media (max-width: 760px) {
+  .login-route-bg {
+    display: none;
+  }
+
+  .login-wordmark {
+    position: static;
+    align-items: center;
+    margin: 1.5rem 0 0.5rem;
+  }
+
+  .login-telemetry-flat {
+    position: static;
+    justify-content: center;
+    margin: 0.5rem 0 1.5rem;
+  }
+
+  .login-canvas {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-y: auto;
+  }
+
+  .login-form-flat {
+    position: static;
+    transform: none;
+    width: min(400px, 90vw);
+    margin: 0 auto;
+  }
 }
