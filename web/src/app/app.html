@@ -18,14 +18,12 @@
       </h1>
       <span class="brand-sub">Araç Takip</span>
     </div>
-    <nav>
-      <a routerLink="/" routerLinkActive="active" [routerLinkActiveOptions]="{ exact: true }">{{ 'nav.hareketler' | translate }}</a>
-      <a routerLink="/rapor" routerLinkActive="active">{{ 'nav.rapor' | translate }}</a>
-      <a routerLink="/import" routerLinkActive="active">{{ 'nav.import' | translate }}</a>
-      @if (auth.role() === 'Admin') {
-        <a routerLink="/admin" routerLinkActive="active">{{ 'nav.admin' | translate }}</a>
-      }
-    </nav>
+    <dx-tabs
+      class="app-nav-tabs"
+      [dataSource]="sekmeler()"
+      [selectedIndex]="secilenSekmeIndex()"
+      (onItemClick)="sekmeSecildi($event)"
+    ></dx-tabs>
     <div class="kullanici-bilgisi">
       <!-- Dil secici (feedback_001, coklu dil altyapisi) - su an sadece nav metinleri gercekten
            cevrilmis, geri kalan ekranlar kademeli olarak tasinacak (bkz. services/dil.ts). -->

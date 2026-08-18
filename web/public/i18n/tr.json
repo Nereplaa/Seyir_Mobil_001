@@ -15,7 +15,8 @@
     "evetSil": "Evet, sil",
     "vazgec": "Vazgeç",
     "onayliyorMusunuz": "Onaylıyor musunuz?",
-    "evet": "Evet"
+    "evet": "Evet",
+    "oturumSuresiDoldu": "Oturum süreniz doldu veya geçersiz. Lütfen tekrar giriş yapın."
   },
   "authOrtak": {
     "telemetriFilo": "araç · aktif filo",

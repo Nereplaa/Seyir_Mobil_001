@@ -68,30 +68,74 @@
   color: var(--slate-300);
 }
 
-.app-header nav {
-  display: flex;
-  gap: 0.25rem;
-  flex-wrap: wrap;
+/* Ust menu (2026-08-18) - duz <nav><a> yerine dx-tabs (DevExtreme). Bilesenin varsayilan
+   acik/Fluent temasi koyu header'a uymadigi icin, "Cikis Yap"/dil secici'de oldugu gibi
+   ::ng-deep ile ic DOM'a (dx-tab, dx-tab-text vb.) mudahale ediliyor.
+
+   Gercekte GORUNEN metin katmani ".dx-tab-text-span-pseudo" (DevExtreme'in Inferno render
+   motorunun ic detayi - gercek metin span'ı olcum icin visibility:hidden, ekranda GORUNEN
+   kopyası ayrı bir ic "-pseudo" span). Bu yuzden rengi SADECE ust ".dx-tab"/".dx-tab-text"a
+   vermek yetmiyor (miras almiyor, kendi rengiyle - kurumun acik tema varsayilanindan gelen
+   koyu lacivert bir gri ile - render ediliyor, koyu header'da neredeyse görünmez oluyordu) -
+   Chrome'da getComputedStyle ile dogrulanan gercek bug (2026-08-18, DevExtreme 26.1.3). */
+.app-header ::ng-deep .app-nav-tabs.dx-tabs {
+  background-color: transparent;
+  width: auto;
+  flex: none;
 }
 
-.app-header nav a {
-  position: relative;
-  color: var(--slate-300);
-  text-decoration: none;
-  font-size: 0.9rem;
-  padding: 0.5rem 0.75rem;
-  border-radius: 4px;
+.app-header ::ng-deep .app-nav-tabs .dx-tabs-wrapper {
+  background-color: transparent;
+  width: auto;
+}
+
+.app-header ::ng-deep .app-nav-tabs .dx-tab {
+  background-color: transparent;
   border-bottom: 2px solid transparent;
+  padding: 0.5rem 0.75rem;
+  width: auto !important;
+  flex: none !important;
 }
 
-.app-header nav a:hover {
+.app-header ::ng-deep .app-nav-tabs .dx-tab::after,
+.app-header ::ng-deep .app-nav-tabs .dx-tab-content::after {
+  /* DevExtreme'in KENDİ animasyonlu secim gostergesi ".dx-tab-content::after" (parlak mavi,
+     3px, genislik metne gore animasyonla degisen bir cubuk) - kendi sabit border-bottom'umuzla
+     (yukarida) AYNI ANDA render oluyordu. Normal durumda ust uste binip fark edilmiyordu ama bir
+     sekmeye TEKRAR tiklaninca (zaten aktif oldugu sayfada) DevExtreme'in kendi gostergesi kisa bir
+     an yeniden konumlanip/genisleyip iki cizginin cakismasi/kayması gibi bir "bozulma" gorunumu
+     yaratiyordu (kullanici geri bildirimi + Chrome'da getComputedStyle ile dogrulandi, 2026-08-18).
+     Kendi border-bottom'umuz aktif sekmeyi zaten gosterdigi icin DevExtreme'in kendi gostergesi
+     tamamen kapatildi. */
+  display: none !important;
+}
+
+.app-header ::ng-deep .app-nav-tabs .dx-tab-text-span,
+.app-header ::ng-deep .app-nav-tabs .dx-tab-text-span-pseudo {
+  color: var(--slate-300);
+}
+
+.app-header ::ng-deep .app-nav-tabs .dx-tab.dx-state-hover .dx-tab-text-span,
+.app-header ::ng-deep .app-nav-tabs .dx-tab.dx-state-hover .dx-tab-text-span-pseudo {
+  color: var(--paper-0);
+}
+
+.app-header ::ng-deep .app-nav-tabs .dx-tab.dx-state-hover {
   background-color: rgba(255, 255, 255, 0.06);
+}
+
+.app-header ::ng-deep .app-nav-tabs .dx-tab-selected {
+  border-bottom-color: var(--route-500);
+}
+
+.app-header ::ng-deep .app-nav-tabs .dx-tab-selected .dx-tab-text-span,
+.app-header ::ng-deep .app-nav-tabs .dx-tab-selected .dx-tab-text-span-pseudo {
   color: var(--paper-0);
 }
 
-.app-header nav a.active {
-  color: var(--paper-0);
-  border-bottom-color: var(--route-500);
+.app-header ::ng-deep .app-nav-tabs .dx-tab-text {
+  font-size: 0.9rem;
+  text-transform: none;
 }
 
 .kullanici-bilgisi {

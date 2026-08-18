@@ -15,7 +15,8 @@
     "evetSil": "Yes, delete",
     "vazgec": "Cancel",
     "onayliyorMusunuz": "Do you confirm?",
-    "evet": "Yes"
+    "evet": "Yes",
+    "oturumSuresiDoldu": "Your session has expired or is invalid. Please log in again."
   },
   "authOrtak": {
     "telemetriFilo": "vehicles · active fleet",

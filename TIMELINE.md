@@ -727,6 +727,27 @@ Uzaktan çalışılan bu günde de yeni bir geliştirme yapılmadı; bunun yerin
 incelenerek hangi katmanda (backend/masaüstü/web) neyin nasıl çalıştığı üzerinde duruldu. Amaç,
 sistemi uçtan uca kavrayıp bundan sonraki adımlarda bağımsız karar alabilecek düzeye gelmekti.
 
+## 2026-08-18 11:17 — Üst Menü DevExtreme'e Taşındı, Roadmap'teki Son Madde Tamamlandı
+
+Web arayüzünün üst kısmındaki sayfa geçiş menüsü (Araç Hareketleri / Rapor / Excel İçe Aktar /
+Yönetici Paneli), geri kalan arayüzle aynı bileşen kütüphanesini (DevExtreme) kullanacak şekilde
+yenilendi. Menü artık dil değişikliğine ve kullanıcı rolüne (Yönetici sekmesi sadece Admin
+hesaplarda görünüyor) canlı olarak uyum sağlıyor. Bu değişiklik sırasında iki gerçek görsel hata
+bulunup düzeltildi: seçili olmayan sekme yazılarının koyu temada neredeyse görünmez kalması, ve
+zaten açık olunan sayfanın sekmesine tekrar tıklandığında görünen bir çizgi bozulması (menünün
+kendi vurgu çizgisiyle DevExtreme'in dahili göstergesinin çakışmasından kaynaklanıyordu). Gerçek
+bir tarayıcıda (giriş yapılarak, sekmeler arası gezinilerek, hem Türkçe hem İngilizce dilde)
+doğrulandı.
+
+## 2026-08-18 13:33 — Oturum Süresi Uyarısında Dil Tutarsızlığı Düzeltildi
+
+Oturum süresi dolduğunda (veya geçersiz hale geldiğinde) çıkan uyarı penceresinin başlığı doğru
+dilde görünürken, mesaj metni her zaman Türkçe kalıyordu — arayüz İngilizce olsa bile. Artık bu
+mesaj da seçili dile göre gösteriliyor. Süreçte, uygulamanın çok erken bir anında (sayfa henüz
+tam açılmadan) bu uyarının tetiklenmesi durumunda mesajın hiç çevrilmeden ham haliyle görünebileceği
+ikinci, daha ince bir sorun da bulunup aynı anda düzeltildi. Gerçek bir tarayıcıda, hem normal
+kullanım hem de bu erken tetiklenme senaryosu ayrı ayrı test edilerek doğrulandı.
+
 ---
 
 ## 🔜 Sıradaki Adımlar
@@ -745,7 +766,7 @@ sistemi uçtan uca kavrayıp bundan sonraki adımlarda bağımsız karar alabile
 - [x] Excel'den toplu veri içe aktarma (web + masaüstü)
 - [x] Web arayüzünün tasarım dilinin yenilenmesi (kurum geri bildirimi üzerine)
 - [x] Graylog üzerinde sistem izleme panosu (dashboard) kurulması
-- [ ] Üst menü/sekme yapısının DevExtreme'e taşınması (isteğe bağlı, henüz yapılmadı)
+- [x] Üst menü/sekme yapısının DevExtreme'e taşınması
 - [x] "Şifremi Unuttum" akışı + e-posta ile şifre sıfırlama (gerçek mail testiyle doğrulandı)
 - [x] Çoklu dil desteği — tüm ekranlar İngilizce/Türkçe arasında geçiş yapabiliyor
 - [x] Arayüz tasarımında "yapay zeka hissi"ni kırma çalışması — yeni fontlar entegre edildi,

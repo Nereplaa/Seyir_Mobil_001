@@ -1,6 +1,7 @@
 import { HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { Router } from '@angular/router';
+import { TranslateService } from '@ngx-translate/core';
 import { catchError, throwError } from 'rxjs';
 import { Auth } from '../services/auth';
 import { Bildirim } from '../services/bildirim';
@@ -24,6 +25,10 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const auth = inject(Auth);
   const router = inject(Router);
   const bildirim = inject(Bildirim);
+  // TranslateService, Bildirim.ts'teki AYNI sebeple (NG0200 dongusel bagimlilik - yukaridaki
+  // yorum) constructor'da DEGIL, Injector uzerinden TEMBEL aliniyor; catchError icinde (gercek
+  // bir 401 olustugunda, uygulama tam kurulduktan cok sonra) cagrildigi icin dongu kirilmis olur.
+  const injector = inject(Injector);
 
   const tokenGerekmiyor = TOKEN_GEREKMEYEN_YOLLAR.some((yol) => req.url.includes(yol));
   const token = auth.token();
@@ -44,7 +49,14 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
         const oturumZatenAcikti = !!auth.token();
         auth.oturumuTemizle();
         if (oturumZatenAcikti) {
-          bildirim.bilgi('Oturum süreniz doldu veya geçersiz. Lütfen tekrar giriş yapın.');
+          // translate.instant() DEGIL translate.get() - sayfa YENI acilmisken (ör. token zaten
+          // gecersizken F5 yapilmasi) ceviri dosyasi henuz yuklenmeden bu kod calisirsa instant()
+          // henuz olmayan degeri DEGIL, anahtarin kendisini ("common.oturumSuresiDoldu" duz metin
+          // olarak) dondurur - Chrome'da bu senaryo simule edilip gercekten yakalandi (2026-08-18).
+          // get() ceviri dosyasi yuklenene kadar bekleyen bir Observable dondurdugu icin bu
+          // yarisa girmiyor.
+          const translate = injector.get(TranslateService);
+          translate.get('common.oturumSuresiDoldu').subscribe((mesaj) => bildirim.bilgi(mesaj));
         }
         router.navigate(['/login']);
       }
