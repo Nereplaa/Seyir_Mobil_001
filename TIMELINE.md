@@ -715,6 +715,20 @@ aktarma, yönetici paneli) başka bir sorun bulunmadı.
 
 ---
 
+## 2026-08-14 17:00 — Claude Eğitimi ve Sistemin Genel Değerlendirmesi
+
+Bugün yeni kod geliştirilmedi — bunun yerine Udemy üzerinden bir Claude eğitimi tamamlandı ve
+projenin genel yapısı (mimari, ekranlar, bugüne kadar yapılanlar) baştan sona gözden geçirilerek
+sistemin nasıl çalıştığı pekiştirildi.
+
+## 2026-08-17 17:00 — Proje Kodunun Çalışma Mantığının İncelenmesi
+
+Uzaktan çalışılan bu günde de yeni bir geliştirme yapılmadı; bunun yerine projenin kod tabanı
+incelenerek hangi katmanda (backend/masaüstü/web) neyin nasıl çalıştığı üzerinde duruldu. Amaç,
+sistemi uçtan uca kavrayıp bundan sonraki adımlarda bağımsız karar alabilecek düzeye gelmekti.
+
+---
+
 ## 🔜 Sıradaki Adımlar
 
 - [x] Web istemcisinin eklenmesi (aynı backend API üzerinden)
